@@ -1,65 +1,492 @@
-:root {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --text: #1f2328;
-    --muted: #656d76;
-    --border: #d8dee4;
-    --primary: #2f6fdb;
-    --primary-hover: #245bb8;
-    --danger: #c9372c;
-    --radius: 8px;
+/* ==========================================================================
+   GDT — feuille de style « carnet de notes »
+   Mobile first : les styles de base visent les petits écrans, les media
+   queries (min-width) enrichissent la mise en page sur les grands écrans.
+   ========================================================================== */
+
+/* --- Polices (embarquées, licence SIL OFL : voir /static/fonts/OFL.txt) --- */
+@font-face {
+    font-family: "Fraunces";
+    src: url("/static/fonts/fraunces-latin-wght-normal.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Source Sans 3";
+    src: url("/static/fonts/source-sans-3-latin-wght-normal.woff2") format("woff2");
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Source Sans 3";
+    src: url("/static/fonts/source-sans-3-latin-wght-italic.woff2") format("woff2");
+    font-weight: 200 900;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Caveat";
+    src: url("/static/fonts/caveat-latin-600-normal.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
 }
 
-* { box-sizing: border-box; }
+/* --- Variables de design ------------------------------------------------- */
+:root {
+    /* Papier et encre */
+    --paper: #f6f0e3;          /* fond de page, papier crème */
+    --sheet: #fffdf7;          /* feuille : cartes et formulaires */
+    --ink: #29241f;            /* texte principal */
+    --ink-soft: #5c5249;       /* texte secondaire (contraste AA sur --sheet et --paper) */
+    --line: #ddd3c2;           /* bordures */
+    --ruled: #dbe4ee;          /* lignes de cahier */
+    --margin: #e3a595;         /* marge rouge du cahier (décorative) */
+
+    /* Accents */
+    --accent: #2b4a7e;         /* encre bleue : liens et bouton principal */
+    --accent-strong: #1f3760;  /* survol */
+    --accent-tint: #e4eaf4;
+    --highlight: #9c3f27;      /* terre cuite : petits accents manuscrits */
+    --danger: #a3262a;
+    --danger-tint: #f8e1df;
+    --success: #2e5b37;
+    --success-tint: #dcebd9;
+
+    /* États des notes : le texte reste toujours présent, la couleur n'est qu'un indice */
+    --todo: #5c5249;
+    --todo-bg: #ebe4d7;
+    --progress: #7a4a00;
+    --progress-bg: #f9e5bd;
+    --done: #2e5b37;
+    --done-bg: #dcebd9;
+
+    --focus: #1f3760;
+
+    /* Typographie */
+    --font-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-title: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+
+    /* Espacements (échelle unique) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4rem;
+
+    --radius: 0.5rem;
+    --shadow: 0 1px 2px rgb(41 36 31 / 0.06), 0 4px 12px rgb(41 36 31 / 0.06);
+    --container: 68rem;
+    --tap: 2.75rem;            /* taille minimale d'une cible tactile (44 px) */
+}
+
+/* --- Base ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.5;
-    color: var(--text);
-    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--paper);
 }
 
-a { color: var(--primary); }
+h1, h2, h3 {
+    font-family: var(--font-title);
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 var(--space-4);
+    text-wrap: balance;
+}
+h1 { font-size: clamp(2rem, 6vw + 0.5rem, 3.25rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 3vw + 0.75rem, 2rem); }
+h3 { font-size: 1.25rem; }
+
+p { margin: 0 0 var(--space-4); }
+
+a {
+    color: var(--accent);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+}
+a:hover { color: var(--accent-strong); }
+
+img, svg { max-width: 100%; display: block; }
+
+/* Focus visible et épais pour la navigation au clavier */
+:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+/* <main> reçoit le focus via le lien d'évitement : pas de contour sur toute la page */
+main:focus { outline: none; }
+
+/* --- Utilitaires ---------------------------------------------------------- */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
 
 .container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 16px;
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: var(--space-4);
 }
 
-main.container { padding-top: 32px; padding-bottom: 32px; }
+/* Texte manuscrit, pour de petits accents uniquement (jamais pour du contenu long) */
+.hand {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    color: var(--highlight);
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
 
-/* Navigation */
-.nav { background: var(--surface); border-bottom: 1px solid var(--border); }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 56px; }
-.brand { font-weight: 700; font-size: 1.2rem; text-decoration: none; color: var(--text); }
-.nav-links { display: flex; gap: 16px; align-items: center; }
-
-/* Blocks */
-.card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+/* --- Lien d'évitement ----------------------------------------------------- */
+.skip-link {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--accent);
+    color: #fff;
     border-radius: var(--radius);
-    padding: 24px;
+    font-weight: 600;
+    transform: translateY(-200%);
 }
-.card h1 { margin-top: 0; }
+.skip-link:focus { transform: none; color: #fff; }
 
+/* --- En-tête et navigation ------------------------------------------------ */
+.site-header {
+    background: var(--sheet);
+    border-bottom: 1px solid var(--line);
+}
+.site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-3);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    color: var(--ink);
+    text-decoration: none;
+}
+.brand:hover { color: var(--ink); }
+.brand__logo { width: 2rem; height: 2rem; flex: none; }
+.brand__name {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.site-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.site-nav a:not(.button) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding-inline: var(--space-2);
+    font-weight: 600;
+    text-decoration: none;
+}
+.site-nav a:not(.button):hover { text-decoration: underline; }
+.site-nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+/* Sur très petit écran, « Créer un compte » n'est proposé que dans la page
+   (accueil, lien sous le formulaire de connexion) pour garder l'en-tête sur une ligne */
+.site-nav__register { display: none; }
+
+/* --- Boutons ------------------------------------------------------------- */
 .button {
-    display: inline-block;
-    padding: 8px 16px;
-    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: var(--space-2) var(--space-5);
+    border: 2px solid var(--accent);
     border-radius: var(--radius);
-    background: var(--primary);
+    background: var(--accent);
     color: #fff;
     font: inherit;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
     text-decoration: none;
     cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.button:hover { background: var(--primary-hover); }
+.button:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
 
-/* Error page */
-.error-page { text-align: center; }
-.error-status { font-size: 3rem; font-weight: 700; color: var(--danger); margin: 0; }
+.button--secondary {
+    background: transparent;
+    color: var(--accent);
+}
+.button--secondary:hover { background: var(--accent-tint); color: var(--accent-strong); }
 
-.footer { color: var(--muted); font-size: 0.875rem; padding-bottom: 24px; }
+.button--small {
+    min-height: 2.5rem;
+    padding: var(--space-1) var(--space-4);
+    font-size: 1rem;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+/* --- Contenu principal ---------------------------------------------------- */
+.site-main {
+    flex: 1;
+    padding-block: var(--space-6) var(--space-7);
+}
+
+/* --- Feuille de cahier : lignes bleues et marge rouge ---------------------- */
+.sheet {
+    position: relative;
+    background-color: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-5) var(--space-4);
+}
+.sheet--ruled {
+    padding-left: calc(var(--space-6) + var(--space-2));
+    background-image:
+        linear-gradient(to right, transparent var(--space-6), var(--margin) var(--space-6), var(--margin) calc(var(--space-6) + 2px), transparent calc(var(--space-6) + 2px)),
+        repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.6em - 1px), var(--ruled) calc(1.6em - 1px), var(--ruled) 1.6em);
+    background-position: 0 0, 0 var(--space-5);
+}
+
+/* --- Badges d'état des notes ---------------------------------------------- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.1em 0.6em;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+.badge::before {
+    content: "";
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+}
+.badge--todo { color: var(--todo); background: var(--todo-bg); }
+.badge--in_progress { color: var(--progress); background: var(--progress-bg); }
+.badge--in_progress::before { background: linear-gradient(to right, currentColor 50%, transparent 50%); }
+.badge--done { color: var(--done); background: var(--done-bg); }
+.badge--done::before { background: currentColor; }
+
+/* --- Accueil : bandeau principal ------------------------------------------ */
+.hero {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+    margin-bottom: var(--space-8);
+}
+.hero__eyebrow { margin-bottom: var(--space-2); }
+.hero__lead {
+    font-size: 1.1875rem;
+    color: var(--ink-soft);
+    max-width: 34rem;
+}
+.hero__title em {
+    font-style: normal;
+    background: linear-gradient(to top, var(--progress-bg) 0.35em, transparent 0.35em);
+}
+
+/* Aperçu d'un espace, sous forme de page de cahier (décoratif) */
+.preview {
+    max-width: 26rem;
+    width: 100%;
+    justify-self: center;
+    transform: rotate(-1.5deg);
+}
+.preview__title {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.6em;
+    color: var(--highlight);
+    margin: 0;
+}
+.preview__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.preview__list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 3.2em;
+}
+
+/* --- Accueil : étapes ------------------------------------------------------ */
+.section { margin-bottom: var(--space-8); }
+.section__intro { color: var(--ink-soft); max-width: 40rem; }
+
+.steps {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+}
+.step {
+    counter-increment: step;
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+}
+.step::before {
+    content: counter(step);
+    font-family: var(--font-hand);
+    font-weight: 600;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--highlight);
+}
+.step h3 { margin-bottom: var(--space-1); }
+.step p { margin: 0; color: var(--ink-soft); }
+.step .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+/* --- Accueil : bandeau données personnelles ------------------------------- */
+.callout {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-4);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--accent-tint);
+}
+.callout h2 { font-size: 1.375rem; margin: 0 0 var(--space-1); }
+.callout p { margin: 0; }
+
+/* --- Page d'erreur -------------------------------------------------------- */
+.error-page {
+    max-width: 36rem;
+    margin-inline: auto;
+    text-align: center;
+}
+.error-page__status {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--highlight);
+    margin-bottom: var(--space-2);
+}
+
+/* --- Pied de page --------------------------------------------------------- */
+.site-footer {
+    border-top: 1px solid var(--line);
+    background: var(--sheet);
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+}
+.site-footer__inner {
+    padding-block: var(--space-5);
+    text-align: center;
+}
+.site-footer p { margin: 0; }
+
+/* ==========================================================================
+   Écrans moyens (≥ 30rem, ~480 px)
+   ========================================================================== */
+@media (min-width: 30rem) {
+    .container { padding-inline: var(--space-5); }
+    .site-nav__register { display: list-item; }
+    .button-group { flex-direction: row; flex-wrap: wrap; }
+    .sheet { padding: var(--space-6) var(--space-5); }
+    .sheet--ruled { padding-left: calc(var(--space-7) + var(--space-2)); }
+    .sheet--ruled {
+        background-image:
+            linear-gradient(to right, transparent var(--space-7), var(--margin) var(--space-7), var(--margin) calc(var(--space-7) + 2px), transparent calc(var(--space-7) + 2px)),
+            repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.6em - 1px), var(--ruled) calc(1.6em - 1px), var(--ruled) 1.6em);
+    }
+}
+
+/* ==========================================================================
+   Tablettes et ordinateurs (≥ 48rem, ~768 px)
+   ========================================================================== */
+@media (min-width: 48rem) {
+    .site-main { padding-block: var(--space-7) var(--space-8); }
+    .hero { grid-template-columns: 1.1fr 1fr; gap: var(--space-7); }
+    .steps { grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+    .callout {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        padding: var(--space-5) var(--space-6);
+    }
+    .site-footer__inner { text-align: left; }
+}
+
+/* --- Préférences utilisateur --------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+    .preview { transform: none; }
+}
+
+/* Mode contraste élevé de Windows : les bordures restent visibles */
+@media (forced-colors: active) {
+    .badge, .button, .sheet { border: 1px solid CanvasText; }
+}
