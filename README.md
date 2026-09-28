@@ -88,6 +88,14 @@ Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **
 
 `TLS_HSTS=true` demande au navigateur de n'utiliser que HTTPS pendant un an. À ne pas activer sur `localhost`, où la règle s'appliquerait à tous les ports.
 
+## Authentification et sécurité des formulaires
+
+- **Session** : après la connexion, le JWT renvoyé par l'API est gardé dans un cookie `HttpOnly` (illisible par JavaScript), `SameSite=Lax`, qui expire en même temps que le token. En HTTPS, il est aussi `Secure` et préfixé `__Host-`.
+- **Vérification** : à chaque page, le client demande à l'API qui est connecté (`GET /users/me`). Un token refusé (expiré, compte supprimé) est retiré du navigateur.
+- **Pages protégées** : un visiteur est redirigé vers `/login`, puis ramené à la page demandée une fois connecté (seules les adresses internes sont acceptées, pour éviter les redirections ouvertes). Ces pages ne sont pas mises en cache (`Cache-Control: no-store`).
+- **CSRF** : chaque formulaire contient un jeton aléatoire, comparé à celui du cookie `gdt_csrf`. Les envois marqués par le navigateur comme venant d'un autre site (`Sec-Fetch-Site`) sont refusés.
+- **Déconnexion** : le cookie est supprimé. Le JWT reste techniquement valide jusqu'à son expiration, l'API ne permettant pas de le révoquer.
+
 ## Structure du projet
 
 ```
@@ -96,13 +104,14 @@ internal/
   apiclient/         Client HTTP typé vers l'API (modèles, appels, erreurs de l'API)
   config/            Chargement de la configuration (.env + variables d'environnement)
   handler/           Handlers HTTP : lisent la requête, appellent l'API, rendent une page
-  middleware/        Logs des requêtes, en-têtes de sécurité, récupération des panics
-  server/            Déclaration des routes et création du serveur HTTP
+  middleware/        Logs, en-têtes de sécurité, panics, session, pages protégées, CSRF
+  server/            Déclaration des routes et création du serveur HTTP (+ tests de bout en bout)
+  session/           Cookies (JWT, message flash, jeton CSRF) et données de la requête
   view/              Chargement des templates et rendu des pages
 web/
   templates/
     layouts/         Squelette HTML commun (base.html)
-    partials/        Morceaux réutilisables (navigation…)
+    partials/        Morceaux réutilisables (en-tête, champs de formulaire, messages…)
     pages/           Une page par fichier, qui définit le bloc "content"
   static/            CSS, polices embarquées (licence OFL) et images
 ```
