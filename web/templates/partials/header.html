@@ -1,5 +1,5 @@
 {{define "header"}}
-<header class="site-header">
+<header class="site-header{{if .User}} site-header--user{{end}}">
     <div class="container site-header__inner">
         <a class="brand" href="{{if .User}}/spaces{{else}}/{{end}}" aria-label="GDT, retour à l'accueil">
             {{template "logo"}}
@@ -9,7 +9,7 @@
             <ul>
             {{if .User}}
                 <li><a href="/spaces"{{if eq .Path "/spaces"}} aria-current="page"{{end}}>Mes espaces</a></li>
-                <li class="site-nav__user"><span class="visually-hidden">Connecté en tant que </span>{{.User.User.Username}}</li>
+                <li><a class="site-nav__account" href="/account"{{if eq .Path "/account"}} aria-current="page"{{end}}><span class="visually-hidden">Mon compte, connecté en tant que </span><span class="site-nav__username">{{.User.User.Username}}</span></a></li>
                 <li>
                     <form class="inline-form" method="post" action="/logout">
                         {{template "csrf" .}}

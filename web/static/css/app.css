@@ -797,16 +797,55 @@ main:focus { outline: none; }
 .markdown-help code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
 .markdown-help p { margin: 0; color: var(--ink-soft); }
 
+/* --- Mon compte ----------------------------------------------------------- */
+.account { display: grid; gap: var(--space-4); }
+.account h2 { font-size: 1.375rem; }
+.account__note { color: var(--ink-soft); font-size: 0.9375rem; }
+.account__danger { border-color: var(--danger); }
+.account__privacy { margin-top: var(--space-5); color: var(--ink-soft); }
+
+.details-list { margin: 0; display: grid; gap: var(--space-3); }
+.details-list div { display: grid; gap: 0; }
+.details-list dt { font-weight: 600; font-size: 0.9375rem; color: var(--ink-soft); }
+.details-list dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Case à cocher avec un libellé cliquable */
+.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    cursor: pointer;
+}
+.checkbox input {
+    flex: none;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: 0.15rem 0 0;
+    accent-color: var(--danger);
+}
+
 /* Boutons de suppression */
 .button--danger { background: var(--danger); border-color: var(--danger); }
 .button--danger:hover { background: #82191d; border-color: #82191d; }
 .button--danger-outline { background: transparent; border-color: var(--danger); color: var(--danger); }
 .button--danger-outline:hover { background: var(--danger-tint); border-color: var(--danger); color: #82191d; }
 
-.site-nav__user {
-    display: none;
-    color: var(--ink-soft);
-    font-weight: 600;
+/* Connecté, sur petit écran : le logo seul et des liens plus compacts,
+   pour garder l'en-tête sur une ligne (le lien du logo garde son nom accessible) */
+.site-header--user .brand__name { display: none; }
+.site-header--user .site-nav ul { gap: 0; }
+.site-header--user .site-nav a:not(.button),
+.site-header--user .nav-button { padding-inline: 0.4rem; font-size: 1rem; }
+
+/* Lien « Mon compte » : le pseudo, tronqué s'il est long */
+.site-nav__username {
+    display: inline-block;
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
 }
 
 /* --- Page d'erreur -------------------------------------------------------- */
@@ -843,6 +882,10 @@ main:focus { outline: none; }
 @media (min-width: 30rem) {
     .container { padding-inline: var(--space-5); }
     .site-nav__register { display: list-item; }
+    .site-header--user .brand__name { display: inline; }
+    .site-header--user .site-nav ul { gap: var(--space-2); }
+    .site-header--user .site-nav a:not(.button),
+    .site-header--user .nav-button { padding-inline: var(--space-2); font-size: inherit; }
     .auth__card { padding: var(--space-6); }
     .form__submit { width: auto; justify-self: start; }
     .form__actions { flex-direction: row; flex-wrap: wrap; }
@@ -866,7 +909,9 @@ main:focus { outline: none; }
     .card-list { grid-template-columns: repeat(2, 1fr); }
     .page-header { flex-direction: row; justify-content: space-between; align-items: flex-end; }
     .page-header .actions, .page-header > .button { flex: none; }
-    .site-nav__user { display: list-item; padding-inline: var(--space-2); }
+    .site-nav__username { max-width: 14rem; }
+    .account { grid-template-columns: repeat(2, 1fr); }
+    .account .account__danger { grid-column: 1 / -1; }
     .callout {
         grid-template-columns: 1fr auto;
         align-items: center;
