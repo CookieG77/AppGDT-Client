@@ -25,6 +25,9 @@ type APIConfig struct {
 	BaseURL string
 	// Timeout is the maximum duration of a single API call
 	Timeout time.Duration
+	// CAFile is an optional PEM file of certificate authorities to trust
+	// when the API is served over HTTPS with a local or self-signed certificate
+	CAFile string
 }
 
 // TLSConfig enables HTTPS between the browser and the client when a
@@ -62,12 +65,17 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.New("environment variables 'TLS_CERT_FILE' and 'TLS_KEY_FILE' must be set together")
 	}
 
+	if caFile := os.Getenv("API_CA_FILE"); caFile != "" && !strings.HasPrefix(apiBaseURL, "https://") {
+		return nil, errors.New("environment variable 'API_CA_FILE' requires an https:// API_BASE_URL")
+	}
+
 	cfg := &Config{
 		Port:    getEnvOrDefaultPort("PORT", 3000),
 		Address: getEnvOrDefault("ADDRESS", "localhost"),
 		API: &APIConfig{
 			BaseURL: apiBaseURL,
 			Timeout: getEnvOrDefaultDuration("API_TIMEOUT", 5*time.Second),
+			CAFile:  getEnvOrDefault("API_CA_FILE", ""),
 		},
 		TLS: tlsCfg,
 	}

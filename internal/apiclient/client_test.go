@@ -3,9 +3,12 @@ package apiclient
 import (
 	"context"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -159,5 +162,42 @@ func TestExportAccountKeepsFilename(t *testing.T) {
 	}
 	if export.Filename != "gdt-export-2026-09-28.json" || string(export.Body) != `{"user":{}}` {
 		t.Errorf("unexpected export %+v", export)
+	}
+}
+
+// An API served over HTTPS with its own certificate is refused by default,
+// and accepted once its certificate authority is given (API_CA_FILE).
+func TestHTTPSWithCustomCA(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	}))
+	defer srv.Close()
+
+	if err := New(srv.URL, time.Second).Health(context.Background()); !errors.Is(err, ErrUnavailable) {
+		t.Fatalf("an unknown certificate must be refused, got %v", err)
+	}
+
+	caFile := filepath.Join(t.TempDir(), "ca.pem")
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: srv.Certificate().Raw})
+	if err := os.WriteFile(caFile, certPEM, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	tlsCfg, err := LoadTLSConfig(caFile)
+	if err != nil {
+		t.Fatalf("LoadTLSConfig: %v", err)
+	}
+	if err := New(srv.URL, time.Second, WithTLSConfig(tlsCfg)).Health(context.Background()); err != nil {
+		t.Errorf("the trusted certificate must be accepted, got %v", err)
+	}
+}
+
+func TestLoadTLSConfigErrors(t *testing.T) {
+	if _, err := LoadTLSConfig(filepath.Join(t.TempDir(), "missing.pem")); err == nil {
+		t.Error("a missing file must be an error")
+	}
+	bad := filepath.Join(t.TempDir(), "bad.pem")
+	_ = os.WriteFile(bad, []byte("not a certificate"), 0o600)
+	if _, err := LoadTLSConfig(bad); err == nil {
+		t.Error("a file without certificate must be an error")
 	}
 }

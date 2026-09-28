@@ -44,7 +44,11 @@ func run(logger *slog.Logger) error {
 
 	// Client used by every page to call the API. An unreachable API does not
 	// stop the startup: pages will show an error until it comes back.
-	api := apiclient.New(cfg.API.BaseURL, cfg.API.Timeout)
+	apiTLS, err := apiclient.LoadTLSConfig(cfg.API.CAFile)
+	if err != nil {
+		return err
+	}
+	api := apiclient.New(cfg.API.BaseURL, cfg.API.Timeout, apiclient.WithTLSConfig(apiTLS))
 	checkAPI(ctx, logger, api, cfg.API.BaseURL)
 
 	// Parsing every template once: an invalid template stops the startup

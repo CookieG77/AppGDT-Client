@@ -5,6 +5,7 @@ package apiclient
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,13 +25,29 @@ type Client struct {
 	http    *http.Client
 }
 
+// Option changes how the client connects to the API.
+type Option func(*http.Transport)
+
+// WithTLSConfig sets the TLS settings used to reach an API served over
+// HTTPS, for example to trust a local certificate authority.
+func WithTLSConfig(cfg *tls.Config) Option {
+	return func(t *http.Transport) {
+		t.TLSClientConfig = cfg
+	}
+}
+
 // New creates a client for the API located at baseURL (without trailing slash).
 // Every call is cancelled after timeout.
-func New(baseURL string, timeout time.Duration) *Client {
+func New(baseURL string, timeout time.Duration, opts ...Option) *Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	for _, opt := range opts {
+		opt(transport)
+	}
 	return &Client{
 		baseURL: baseURL,
 		http: &http.Client{
-			Timeout: timeout,
+			Timeout:   timeout,
+			Transport: transport,
 			// The API never redirects: a redirect is treated as a response
 			CheckRedirect: func(*http.Request, []*http.Request) error {
 				return http.ErrUseLastResponse

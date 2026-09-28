@@ -35,6 +35,7 @@ Copier `.env.example` en `.env` puis adapter les valeurs. Les variables déjà d
 | `ADDRESS`      | `localhost`             | Adresse d'écoute du client    |
 | `API_BASE_URL` | `http://localhost:8080` | URL de base de l'API serveur  |
 | `API_TIMEOUT`  | `5s`                    | Durée maximale d'un appel à l'API |
+| `API_CA_FILE`  | *(vide)*                | Autorité de certification (PEM) à approuver pour joindre l'API en HTTPS |
 | `TLS_CERT_FILE` | *(vide)*               | Certificat TLS (PEM) : active HTTPS avec `TLS_KEY_FILE` |
 | `TLS_KEY_FILE`  | *(vide)*               | Clé privée du certificat (PEM) |
 | `TLS_HSTS`      | `false`                | Envoie l'en-tête HSTS (HTTPS uniquement, à réserver à la production) |
@@ -98,6 +99,18 @@ go run "$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host localhost
 Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **une clé privée ne doit jamais être versionnée.**
 
 `TLS_HSTS=true` demande au navigateur de n'utiliser que HTTPS pendant un an. À ne pas activer sur `localhost`, où la règle s'appliquerait à tous les ports.
+
+### HTTPS vers l'API
+
+Les échanges entre le client et l'API (JWT, contenu des notes) peuvent aussi être chiffrés. Lancer l'API en HTTPS (variables `TLS_CERT_FILE` / `TLS_KEY_FILE` du serveur), puis utiliser une URL `https://` :
+
+```env
+API_BASE_URL=https://localhost:8080
+# Seulement si le certificat de l'API n'est pas reconnu par le système :
+API_CA_FILE=certs/rootCA.pem
+```
+
+Les certificats de l'API sont toujours vérifiés : les autorités du système sont approuvées, et `API_CA_FILE` en ajoute une (l'autorité locale de mkcert, obtenue avec `mkcert -CAROOT`, ou le certificat auto-signé de l'API). `API_CA_FILE` avec une URL `http://` empêche le démarrage.
 
 ## Authentification et sécurité des formulaires
 
