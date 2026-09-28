@@ -110,8 +110,18 @@ Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **
 | `/notes/{id}` | Une note, en mode consultation |
 | `/notes/{id}/edit` | Une note, en mode édition |
 | `/notes/{id}/delete` | Suppression d'une note (avec confirmation) |
+| `/account` | Mon compte : informations, export et suppression des données |
+| `/account/export` | Téléchargement de toutes les données du compte (JSON) |
+| `/account/delete` | Suppression du compte (mot de passe + confirmation) |
 
 Les formulaires HTML ne connaissant que `GET` et `POST`, les modifications sont envoyées en `POST` au client, qui appelle l'API en `PUT` ou `DELETE`. Toutes les pages fonctionnent sans JavaScript.
+
+## Droits sur les données (RGPD)
+
+La page **Mon compte** (lien sur le pseudo, dans l'en-tête) donne accès aux deux droits proposés par l'API :
+
+- **Portabilité / accès** : téléchargement d'un fichier JSON contenant le profil, les espaces et toutes les notes (`GET /users/me/export`). Le mot de passe n'est jamais exporté.
+- **Effacement** : suppression définitive du compte et de toutes ses données (`DELETE /users/me`). Le mot de passe est redemandé et une case de confirmation doit être cochée ; ensuite la session est fermée.
 
 ## Markdown dans les notes
 
