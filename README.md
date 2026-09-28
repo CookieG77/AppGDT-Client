@@ -104,5 +104,5 @@ web/
     layouts/         Squelette HTML commun (base.html)
     partials/        Morceaux réutilisables (navigation…)
     pages/           Une page par fichier, qui définit le bloc "content"
-  static/            CSS et autres fichiers statiques
+  static/            CSS, polices embarquées (licence OFL) et images
 ```
