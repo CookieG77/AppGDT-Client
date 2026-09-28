@@ -1,0 +1,17 @@
+{{define "base"}}<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{if .Title}}{{.Title}} · {{end}}GDT</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    {{template "nav" .}}
+    <main class="container">
+        {{template "content" .}}
+    </main>
+    <footer class="container footer">GDT — gestion de notes par espaces</footer>
+</body>
+</html>
+{{end}}
