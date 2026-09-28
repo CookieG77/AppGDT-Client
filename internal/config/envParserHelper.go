@@ -36,6 +36,21 @@ func getEnvOrDefaultInt(key string, defaultVal int) int {
 	return i
 }
 
+// getEnvOrDefaultBool returns the requested boolean env variable if present and valid.
+// Otherwise, returns the given boolean default value.
+func getEnvOrDefaultBool(key string, defaultVal bool) bool {
+	value, exists := os.LookupEnv(key)
+	if !exists || value == "" {
+		return defaultVal
+	}
+	b, err := strconv.ParseBool(value)
+	if err != nil {
+		slog.Warn("environment variable is not a valid boolean", "key", key, "defaultVal", defaultVal)
+		return defaultVal
+	}
+	return b
+}
+
 // inRange returns true if 'n' is in [a, b], false otherwise.
 func inRange(a int, b int, n int) bool {
 	return n >= a && n <= b
