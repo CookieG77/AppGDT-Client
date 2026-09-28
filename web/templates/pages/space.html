@@ -17,12 +17,18 @@
         <a class="button" href="/spaces/{{$space.ID}}/notes/new">Nouvelle note</a>
     </div>
 
+    {{if .Data.Total}}
+    {{$filter := .Data.Filter}}
+    <nav class="status-filter" aria-label="Filtrer les notes par état">
+        <ul>
+            <li><a class="status-filter__link" href="/spaces/{{$space.ID}}"{{if not $filter}} aria-current="true"{{end}}>Toutes&nbsp;: {{.Data.Total}}</a></li>
+            {{range .Data.Counts}}
+            <li><a class="status-filter__link status-filter__link--{{.Status}}" href="/spaces/{{$space.ID}}?status={{.Status}}"{{if eq .Status $filter}} aria-current="true"{{end}}><span class="badge badge--{{.Status}}">{{.Status.Label}}</span>&nbsp;: {{.Count}}</a></li>
+            {{end}}
+        </ul>
+    </nav>
+
     {{with .Data.Notes}}
-    <ul class="status-summary" aria-label="Répartition des notes par état">
-        {{range $.Data.Counts}}
-        <li><span class="badge badge--{{.Status}}">{{.Status.Label}}&nbsp;: {{.Count}}</span></li>
-        {{end}}
-    </ul>
     <ul class="card-list" aria-labelledby="notes-title">
         {{range .}}
         <li class="sheet card note-card">
@@ -33,6 +39,12 @@
         </li>
         {{end}}
     </ul>
+    {{else}}
+    <div class="sheet empty-state">
+        <p>Aucune note «&nbsp;{{$filter.Label}}&nbsp;» dans cet espace.</p>
+        <a href="/spaces/{{$space.ID}}">Voir toutes les notes</a>
+    </div>
+    {{end}}
     {{else}}
     <div class="sheet sheet--ruled empty-state">
         <p>Cet espace ne contient pas encore de note.</p>

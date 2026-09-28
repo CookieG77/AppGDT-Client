@@ -655,9 +655,21 @@ func TestNoteLifecycle(t *testing.T) {
 	expectStatus(t, resp, http.StatusOK)
 	expectContains(t, body, "Exercices p.52", "En cours", "&lt;b&gt;pas du HTML&lt;/b&gt;", `href="`+spacePath+`"`)
 
-	// Listed in its space with the count by status
+	// Listed in its space, with a filter link per status and its count
 	_, body = c.get(spacePath)
-	expectContains(t, body, `href="`+notePath+`"`, "En cours&nbsp;: 1")
+	expectContains(t, body, `href="`+notePath+`"`, `aria-label="Filtrer les notes par état"`, `En cours</span>&nbsp;: 1`)
+
+	// Filtered on its status it is listed, on another status it is not
+	_, body = c.get(spacePath + "?status=in_progress")
+	expectContains(t, body, `href="`+notePath+`"`, `?status=in_progress" aria-current="true"`)
+	_, body = c.get(spacePath + "?status=done")
+	expectContains(t, body, "Aucune note", "Terminé")
+	if strings.Contains(body, `href="`+notePath+`"`) {
+		t.Error("the filter must hide the notes of other statuses")
+	}
+	// An unknown status shows every note
+	_, body = c.get(spacePath + "?status=urgent")
+	expectContains(t, body, `href="`+notePath+`"`)
 
 	// Editing mode: pre-filled, then saved
 	_, body = c.get(notePath + "/edit")

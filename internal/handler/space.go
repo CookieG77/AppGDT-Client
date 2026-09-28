@@ -53,9 +53,14 @@ func (h *SpaceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 type spacePage struct {
 	Space *apiclient.Space
+	// Notes are the notes shown, after the status filter
 	Notes []apiclient.Note
+	// Total is the number of notes of the space, whatever the filter
+	Total int
 	// Counts gives the number of notes of each status, in display order
 	Counts []statusCount
+	// Filter is the status selected with ?status=…, empty for all notes
+	Filter apiclient.NoteStatus
 }
 
 type statusCount struct {
@@ -83,7 +88,7 @@ func (h *SpaceHandler) Show(w http.ResponseWriter, r *http.Request) {
 
 	h.renderer.Render(w, r, http.StatusOK, "space", view.Page{
 		Title:      space.Name,
-		Data:       spacePage{Space: space, Notes: notes, Counts: countByStatus(notes)},
+		Data:       spacePageData(space, notes, apiclient.NoteStatus(r.URL.Query().Get("status"))),
 		Breadcrumb: spaceCrumbs(space, ""),
 	})
 }
@@ -274,4 +279,22 @@ func countByStatus(notes []apiclient.Note) []statusCount {
 		}
 	}
 	return counts
+}
+
+// spacePageData keeps only the notes of the requested status. The filter is
+// applied here rather than by the API: a space holds few notes, and the API
+// contract stays unchanged. An unknown status shows every note.
+func spacePageData(space *apiclient.Space, notes []apiclient.Note, filter apiclient.NoteStatus) spacePage {
+	page := spacePage{Space: space, Notes: notes, Total: len(notes), Counts: countByStatus(notes)}
+	if !filter.Valid() {
+		return page
+	}
+	page.Filter = filter
+	page.Notes = nil
+	for _, n := range notes {
+		if n.Status == filter {
+			page.Notes = append(page.Notes, n)
+		}
+	}
+	return page
 }
