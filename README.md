@@ -34,6 +34,9 @@ Copier `.env.example` en `.env` puis adapter les valeurs. Les variables déjà d
 | `ADDRESS`      | `localhost`             | Adresse d'écoute du client    |
 | `API_BASE_URL` | `http://localhost:8080` | URL de base de l'API serveur  |
 | `API_TIMEOUT`  | `5s`                    | Durée maximale d'un appel à l'API |
+| `TLS_CERT_FILE` | *(vide)*               | Certificat TLS (PEM) : active HTTPS avec `TLS_KEY_FILE` |
+| `TLS_KEY_FILE`  | *(vide)*               | Clé privée du certificat (PEM) |
+| `TLS_HSTS`      | `false`                | Envoie l'en-tête HSTS (HTTPS uniquement, à réserver à la production) |
 
 ## Lancement
 
@@ -54,6 +57,36 @@ Pour produire un exécutable :
 ```bash
 go build -o gdt-client ./cmd/client
 ```
+
+## HTTPS (optionnel)
+
+Le JWT de l'utilisateur est stocké dans un cookie : sans HTTPS, il circule en clair entre le navigateur et le client. Pour chiffrer ces échanges, fournir un certificat et sa clé privée :
+
+```env
+TLS_CERT_FILE=certs/localhost.pem
+TLS_KEY_FILE=certs/localhost-key.pem
+```
+
+Le client est alors accessible sur <https://localhost:3000>. Seul TLS 1.2 ou plus récent est accepté.
+
+**Générer un certificat de développement** avec [mkcert](https://github.com/FiloSottile/mkcert), qui crée une autorité locale reconnue par le navigateur (pas d'avertissement) :
+
+```bash
+mkcert -install
+mkdir certs
+mkcert -cert-file certs/localhost.pem -key-file certs/localhost-key.pem localhost 127.0.0.1 ::1
+```
+
+Sans mkcert, un certificat auto-signé fonctionne aussi, mais le navigateur affichera un avertissement :
+
+```bash
+go run "$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host localhost
+# produit cert.pem et key.pem dans le dossier courant
+```
+
+Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **une clé privée ne doit jamais être versionnée.**
+
+`TLS_HSTS=true` demande au navigateur de n'utiliser que HTTPS pendant un an. À ne pas activer sur `localhost`, où la règle s'appliquerait à tous les ports.
 
 ## Structure du projet
 
