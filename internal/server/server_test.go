@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -21,13 +25,31 @@ import (
 	"github.com/CookieG77/AppGDT-Client/web"
 )
 
+// TestMain silences the logs of the client during the tests.
+func TestMain(m *testing.M) {
+	slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	os.Exit(m.Run())
+}
+
 // fakeAPI imitates the routes of AppGDT-Server used by the pages.
+// Spaces are kept in memory; the token "valid-token" belongs to user 1.
 type fakeAPI struct {
 	calls atomic.Int32
+
+	mu     sync.Mutex
+	nextID int64
+	spaces map[int64]*apiclient.Space
+}
+
+func newFakeAPI() *fakeAPI {
+	return &fakeAPI{nextID: 1, spaces: map[int64]*apiclient.Space{}}
 }
 
 func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.calls.Add(1)
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	writeJSON := func(status int, v any) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
@@ -36,10 +58,16 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	apiError := func(status int, code, msg string) {
 		writeJSON(status, map[string]string{"code": code, "message": msg})
 	}
-	authorized := r.Header.Get("Authorization") == "Bearer valid-token"
+	notFound := func() { apiError(http.StatusNotFound, "NOT_FOUND", "Ressource introuvable.") }
 
-	switch r.Method + " " + r.URL.Path {
-	case "POST /auth/login":
+	public := r.URL.Path == "/auth/login" || r.URL.Path == "/auth/register"
+	if !public && r.Header.Get("Authorization") != "Bearer valid-token" {
+		apiError(http.StatusUnauthorized, "UNAUTHORIZED", "Authentification requise.")
+		return
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /auth/login", func(w http.ResponseWriter, r *http.Request) {
 		var in apiclient.LoginInput
 		_ = json.NewDecoder(r.Body).Decode(&in)
 		switch {
@@ -51,7 +79,8 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			apiError(http.StatusUnauthorized, "INVALID_CREDENTIALS", "Email ou mot de passe incorrect.")
 		}
-	case "POST /auth/register":
+	})
+	mux.HandleFunc("POST /auth/register", func(w http.ResponseWriter, r *http.Request) {
 		var in apiclient.RegisterInput
 		_ = json.NewDecoder(r.Body).Decode(&in)
 		if in.Email == "taken@test.fr" {
@@ -59,21 +88,58 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeJSON(http.StatusCreated, apiclient.User{ID: 2, Email: in.Email, Username: in.Username})
-	case "GET /users/me":
-		if !authorized {
-			apiError(http.StatusUnauthorized, "UNAUTHORIZED", "Authentification requise.")
-			return
-		}
+	})
+	mux.HandleFunc("GET /users/me", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(http.StatusOK, apiclient.User{ID: 1, Email: "ok@test.fr", Username: "Maxime"})
-	case "GET /spaces":
-		if !authorized {
-			apiError(http.StatusUnauthorized, "UNAUTHORIZED", "Authentification requise.")
+	})
+	mux.HandleFunc("GET /spaces", func(w http.ResponseWriter, r *http.Request) {
+		list := []apiclient.Space{}
+		for _, sp := range f.spaces {
+			list = append(list, *sp)
+		}
+		writeJSON(http.StatusOK, list)
+	})
+	mux.HandleFunc("POST /spaces", func(w http.ResponseWriter, r *http.Request) {
+		var in apiclient.SpaceInput
+		_ = json.NewDecoder(r.Body).Decode(&in)
+		if in.Name == "invalide" {
+			writeJSON(http.StatusBadRequest, map[string]any{"code": "VALIDATION_ERROR", "message": "Les données envoyées sont invalides.",
+				"details": []map[string]string{{"field": "name", "message": "Nom refusé par l'API."}}})
 			return
 		}
-		writeJSON(http.StatusOK, []apiclient.Space{{ID: 1, Name: "Devoirs", Description: "École"}})
-	default:
-		apiError(http.StatusNotFound, "ROUTE_NOT_FOUND", "Route inconnue.")
+		sp := &apiclient.Space{ID: f.nextID, Name: in.Name, Description: in.Description, UpdatedAt: time.Now()}
+		f.spaces[sp.ID] = sp
+		f.nextID++
+		writeJSON(http.StatusCreated, sp)
+	})
+	withSpace := func(handle func(sp *apiclient.Space)) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+			sp, ok := f.spaces[id]
+			if !ok {
+				notFound()
+				return
+			}
+			handle(sp)
+		}
 	}
+	mux.HandleFunc("GET /spaces/{id}", withSpace(func(sp *apiclient.Space) { writeJSON(http.StatusOK, sp) }))
+	mux.HandleFunc("PUT /spaces/{id}", func(w http.ResponseWriter, r *http.Request) {
+		withSpace(func(sp *apiclient.Space) {
+			var in apiclient.SpaceInput
+			_ = json.NewDecoder(r.Body).Decode(&in)
+			sp.Name, sp.Description = in.Name, in.Description
+			writeJSON(http.StatusOK, sp)
+		})(w, r)
+	})
+	mux.HandleFunc("DELETE /spaces/{id}", withSpace(func(sp *apiclient.Space) {
+		delete(f.spaces, sp.ID)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		apiError(http.StatusNotFound, "ROUTE_NOT_FOUND", "Route inconnue.")
+	})
+	mux.ServeHTTP(w, r)
 }
 
 type testClient struct {
@@ -88,7 +154,7 @@ type testClient struct {
 func newTestClient(t *testing.T) *testClient {
 	t.Helper()
 
-	api := &fakeAPI{}
+	api := newFakeAPI()
 	apiSrv := httptest.NewServer(api)
 	t.Cleanup(apiSrv.Close)
 
@@ -236,7 +302,7 @@ func TestLoginLogoutFlow(t *testing.T) {
 
 	resp, body := c.get("/spaces")
 	expectStatus(t, resp, http.StatusOK)
-	expectContains(t, body, "Devoirs", "Maxime", `action="/logout"`)
+	expectContains(t, body, "Mes espaces", "Maxime", `action="/logout"`)
 	if got := resp.Header.Get("Cache-Control"); got != "no-store" {
 		t.Errorf("Cache-Control = %q, want no-store", got)
 	}
@@ -386,5 +452,92 @@ func TestLoginRedirectIgnoresExternalNext(t *testing.T) {
 	expectStatus(t, resp, http.StatusSeeOther)
 	if got := resp.Header.Get("Location"); got != "/spaces" {
 		t.Errorf("Location = %q, want /spaces (open redirect)", got)
+	}
+}
+
+// --- Spaces ----------------------------------------------------------------------
+
+func TestSpaceLifecycle(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+
+	resp, body := c.get("/spaces")
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "Votre carnet est vide")
+
+	token := c.csrfToken("/spaces/new")
+
+	// Creation
+	resp, _ = c.post("/spaces", url.Values{"csrf_token": {token}, "name": {"  Devoirs  "}, "description": {"École"}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	location := resp.Header.Get("Location")
+	if location != "/spaces/1" {
+		t.Fatalf("Location = %q, want /spaces/1", location)
+	}
+	resp, body = c.get(location)
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "<h1>Devoirs</h1>", "a été créé", `class="breadcrumb" aria-label=`)
+
+	// Listed, with a link to the space
+	_, body = c.get("/spaces")
+	expectContains(t, body, `href="/spaces/1"`, "École")
+
+	// Modification: the form is pre-filled
+	_, body = c.get("/spaces/1/edit")
+	expectContains(t, body, `value="Devoirs"`, "École</textarea>")
+	resp, _ = c.post("/spaces/1", url.Values{"csrf_token": {token}, "name": {"Cours"}, "description": {""}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	_, body = c.get("/spaces/1")
+	expectContains(t, body, "<h1>Cours</h1>", "a été modifié")
+
+	// Deletion goes through a confirmation page
+	resp, body = c.get("/spaces/1/delete")
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "irréversible", `action="/spaces/1/delete"`)
+	resp, _ = c.post("/spaces/1/delete", url.Values{"csrf_token": {token}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	resp, _ = c.get("/spaces/1")
+	expectStatus(t, resp, http.StatusNotFound)
+}
+
+func TestSpaceFormErrors(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	token := c.csrfToken("/spaces/new")
+
+	// Checked by the client: no API call for an empty name
+	before := c.api.calls.Load()
+	resp, body := c.post("/spaces", url.Values{"csrf_token": {token}, "name": {"   "}, "description": {"Gardée"}})
+	expectStatus(t, resp, http.StatusUnprocessableEntity)
+	expectContains(t, body, "Donnez un nom à l&#39;espace.", "Gardée</textarea>", "<title>Erreur : Nouvel espace · GDT</title>")
+	// Only the session check (GET /users/me) reached the API
+	if calls := c.api.calls.Load() - before; calls != 1 {
+		t.Errorf("expected only the session check, got %d API calls", calls)
+	}
+
+	// Refused by the API: its message is shown under the field
+	resp, body = c.post("/spaces", url.Values{"csrf_token": {token}, "name": {"invalide"}})
+	expectStatus(t, resp, http.StatusUnprocessableEntity)
+	expectContains(t, body, "Nom refusé par l&#39;API.", `id="field-name-error"`)
+}
+
+func TestUnknownOrInvalidSpaceGives404(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	for _, path := range []string{"/spaces/99", "/spaces/abc", "/spaces/0/edit", "/spaces/-1/delete"} {
+		resp, _ := c.get(path)
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("GET %s: status = %d, want 404", path, resp.StatusCode)
+		}
+	}
+}
+
+func TestSpacePagesRequireLogin(t *testing.T) {
+	c := newTestClient(t)
+	for _, path := range []string{"/spaces/new", "/spaces/1", "/spaces/1/edit", "/spaces/1/delete"} {
+		resp, _ := c.get(path)
+		if resp.StatusCode != http.StatusSeeOther || !strings.HasPrefix(resp.Header.Get("Location"), "/login?next=") {
+			t.Errorf("GET %s: expected a redirection to the login page, got %d %s", path, resp.StatusCode, resp.Header.Get("Location"))
+		}
 	}
 }
