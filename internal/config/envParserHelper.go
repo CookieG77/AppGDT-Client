@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"time"
 )
 
 // getEnvOrDefault returns the requested env variable if present and valid.
@@ -47,5 +48,18 @@ func getEnvOrDefaultPort(key string, defaultVal int) int {
 		return value
 	}
 	slog.Warn("environment variable is not a valid port", "key", key, "defaultVal", defaultVal)
+	return defaultVal
+}
+
+// getEnvOrDefaultDuration returns the requested duration env variable if present and valid.
+// Otherwise, returns the given duration default value.
+func getEnvOrDefaultDuration(key string, defaultVal time.Duration) time.Duration {
+	if value := os.Getenv(key); value != "" {
+		duration, err := time.ParseDuration(value)
+		if err == nil && duration > 0 {
+			return duration
+		}
+		slog.Warn("environment variable is not a valid duration", "key", key, "defaultVal", defaultVal)
+	}
 	return defaultVal
 }

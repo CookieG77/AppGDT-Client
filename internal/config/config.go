@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -21,6 +22,8 @@ type Config struct {
 type APIConfig struct {
 	// BaseURL is the root URL of the AppGDT-Server API, without trailing slash
 	BaseURL string
+	// Timeout is the maximum duration of a single API call
+	Timeout time.Duration
 }
 
 func LoadConfig() (*Config, error) {
@@ -39,6 +42,7 @@ func LoadConfig() (*Config, error) {
 		Address: getEnvOrDefault("ADDRESS", "localhost"),
 		API: &APIConfig{
 			BaseURL: apiBaseURL,
+			Timeout: getEnvOrDefaultDuration("API_TIMEOUT", 5*time.Second),
 		},
 	}
 
