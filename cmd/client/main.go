@@ -62,14 +62,26 @@ func run(logger *slog.Logger) error {
 		Page: handler.NewPageHandler(renderer),
 	}
 
+	// HTTPS between the browser and the client, if a certificate is configured
+	opts := server.Options{HSTS: cfg.TLS.HSTS}
+	scheme := "http"
+	if cfg.TLS.Enabled() {
+		if opts.TLS, err = server.LoadTLSConfig(cfg.TLS.CertFile, cfg.TLS.KeyFile); err != nil {
+			return err
+		}
+		scheme = "https"
+	} else if cfg.TLS.HSTS {
+		logger.Warn("TLS_HSTS is ignored without TLS_CERT_FILE and TLS_KEY_FILE")
+	}
+
 	addr := cfg.Address + ":" + strconv.Itoa(cfg.Port)
-	srv := server.New(addr, handlers, staticFS)
+	srv := server.New(addr, handlers, staticFS, opts)
 
 	// Starting the server in a goroutine to prevent a freeze of the exit signal waiter
 	servErr := make(chan error, 1)
 	go func() {
-		logger.Info("client starting", "addr", addr, "api", cfg.API.BaseURL)
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		logger.Info("client starting", "url", scheme+"://"+addr, "api", cfg.API.BaseURL)
+		if err := listen(srv); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			servErr <- err
 		}
 	}()
@@ -92,6 +104,15 @@ func run(logger *slog.Logger) error {
 
 	logger.Info("client stopped")
 	return nil
+}
+
+// listen serves HTTPS when the server has a TLS config, HTTP otherwise.
+func listen(srv *http.Server) error {
+	if srv.TLSConfig != nil {
+		// The certificate is already loaded in TLSConfig
+		return srv.ListenAndServeTLS("", "")
+	}
+	return srv.ListenAndServe()
 }
 
 // checkAPI logs whether the API answers at startup.
