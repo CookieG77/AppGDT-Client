@@ -1,0 +1,32 @@
+{{define "content"}}
+{{$form := .Data.Form}}
+{{$confirmError := index $form.Errors "confirm"}}
+<div class="form-page">
+    <section class="sheet confirm" aria-labelledby="delete-title">
+        <h1 id="delete-title">Supprimer mon compte</h1>
+        <p class="confirm__warning"><span class="confirm__icon" aria-hidden="true">!</span><span>Votre compte, vos espaces et toutes vos notes seront définitivement supprimés. Cette action est irréversible&nbsp;: pensez à <a href="/account/export" download>télécharger vos données</a> avant.</span></p>
+
+        {{template "form-errors" $form}}
+
+        <form class="form" method="post" action="/account/delete" novalidate>
+            {{template "csrf" .}}
+
+            {{template "field" dict "Form" $form "Name" "password" "Label" "Mot de passe" "Type" "password" "Autocomplete" "current-password" "Required" true "Hint" "Pour confirmer que c'est bien vous."}}
+
+            <div class="field field--checkbox{{if $confirmError}} field--invalid{{end}}">
+                {{if $confirmError}}<p class="field__error" id="field-confirm-error"><span class="visually-hidden">Erreur&nbsp;: </span>{{$confirmError}}</p>{{end}}
+                <label class="checkbox" for="field-confirm">
+                    <input type="checkbox" id="field-confirm" name="confirm" value="yes" required aria-required="true"
+                        {{- if $confirmError}} aria-invalid="true" aria-describedby="field-confirm-error"{{end}}>
+                    <span>Je comprends que la suppression de mon compte et de mes données est définitive.</span>
+                </label>
+            </div>
+
+            <div class="form__actions">
+                <button class="button button--danger" type="submit">Supprimer définitivement mon compte</button>
+                <a class="button button--secondary" href="/account">Annuler</a>
+            </div>
+        </form>
+    </section>
+</div>
+{{end}}

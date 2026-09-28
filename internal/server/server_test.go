@@ -36,10 +36,11 @@ func TestMain(m *testing.M) {
 type fakeAPI struct {
 	calls atomic.Int32
 
-	mu     sync.Mutex
-	nextID int64
-	spaces map[int64]*apiclient.Space
-	notes  map[int64]*apiclient.Note
+	mu      sync.Mutex
+	nextID  int64
+	spaces  map[int64]*apiclient.Space
+	notes   map[int64]*apiclient.Note
+	deleted bool // the account of user 1 was deleted
 }
 
 func newFakeAPI() *fakeAPI {
@@ -91,7 +92,25 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(http.StatusCreated, apiclient.User{ID: 2, Email: in.Email, Username: in.Username})
 	})
 	mux.HandleFunc("GET /users/me", func(w http.ResponseWriter, r *http.Request) {
+		if f.deleted {
+			apiError(http.StatusUnauthorized, "UNAUTHORIZED", "Authentification requise.")
+			return
+		}
 		writeJSON(http.StatusOK, apiclient.User{ID: 1, Email: "ok@test.fr", Username: "Maxime"})
+	})
+	mux.HandleFunc("GET /users/me/export", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Disposition", `attachment; filename="gdt-export-2026-09-28.json"`)
+		writeJSON(http.StatusOK, map[string]any{"user": map[string]string{"email": "ok@test.fr"}, "spaces": []any{}})
+	})
+	mux.HandleFunc("DELETE /users/me", func(w http.ResponseWriter, r *http.Request) {
+		var in apiclient.DeleteAccountInput
+		_ = json.NewDecoder(r.Body).Decode(&in)
+		if in.Password != "password123" {
+			apiError(http.StatusForbidden, "INVALID_PASSWORD", "Mot de passe incorrect.")
+			return
+		}
+		f.deleted = true
+		w.WriteHeader(http.StatusNoContent)
 	})
 	mux.HandleFunc("GET /spaces", func(w http.ResponseWriter, r *http.Request) {
 		list := []apiclient.Space{}
@@ -221,6 +240,8 @@ func newTestClient(t *testing.T) *testClient {
 		Auth:  handler.NewAuthHandler(apiClient, renderer, sessions),
 		Space: handler.NewSpaceHandler(apiClient, renderer, sessions),
 		Note:  handler.NewNoteHandler(apiClient, renderer, sessions),
+
+		Account: handler.NewAccountHandler(apiClient, renderer, sessions),
 	}, Sessions{Manager: sessions, API: apiClient}, staticFS, Options{})
 
 	clientSrv := httptest.NewServer(srv.Handler)
@@ -724,4 +745,55 @@ func TestMarkdownScriptsAreServedLocally(t *testing.T) {
 			t.Errorf("%s: Content-Type = %q", path, ct)
 		}
 	}
+}
+
+// --- Account (GDPR rights) -----------------------------------------------------------
+
+func TestAccountExport(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+
+	resp, body := c.get("/account")
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "ok@test.fr", `href="/account/export"`, `href="/account/delete"`, `aria-current="page"`)
+
+	resp, body = c.get("/account/export")
+	expectStatus(t, resp, http.StatusOK)
+	if got := resp.Header.Get("Content-Disposition"); got != `attachment; filename=gdt-export-2026-09-28.json` {
+		t.Errorf("Content-Disposition = %q", got)
+	}
+	if got := resp.Header.Get("Cache-Control"); got != "no-store" {
+		t.Errorf("Cache-Control = %q, want no-store", got)
+	}
+	expectContains(t, body, `"email":"ok@test.fr"`)
+}
+
+func TestAccountDeletion(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	token := c.csrfToken("/account/delete")
+
+	// The explicit confirmation is required
+	resp, body := c.post("/account/delete", url.Values{"csrf_token": {token}, "password": {"password123"}})
+	expectStatus(t, resp, http.StatusUnprocessableEntity)
+	expectContains(t, body, "Cochez la case", `aria-describedby="field-confirm-error"`)
+
+	// A wrong password keeps the account
+	resp, body = c.post("/account/delete", url.Values{"csrf_token": {token}, "password": {"mauvais"}, "confirm": {"yes"}})
+	expectStatus(t, resp, http.StatusForbidden)
+	expectContains(t, body, "Mot de passe incorrect.", `id="field-password-error"`)
+	if c.api.deleted {
+		t.Fatal("the account must not be deleted with a wrong password")
+	}
+
+	// Right password: account deleted, session removed, back to the home page
+	resp, _ = c.post("/account/delete", url.Values{"csrf_token": {token}, "password": {"password123"}, "confirm": {"yes"}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != "/" {
+		t.Errorf("Location = %q, want /", got)
+	}
+	_, body = c.get("/")
+	expectContains(t, body, "définitivement supprimés", `href="/login"`)
+	resp, _ = c.get("/account")
+	expectStatus(t, resp, http.StatusSeeOther)
 }

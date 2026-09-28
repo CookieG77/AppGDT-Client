@@ -16,10 +16,11 @@ import (
 )
 
 type Handlers struct {
-	Page  *handler.PageHandler
-	Auth  *handler.AuthHandler
-	Space *handler.SpaceHandler
-	Note  *handler.NoteHandler
+	Page    *handler.PageHandler
+	Auth    *handler.AuthHandler
+	Space   *handler.SpaceHandler
+	Note    *handler.NoteHandler
+	Account *handler.AccountHandler
 }
 
 // Sessions gives the middlewares what they need to read the session.
@@ -77,6 +78,12 @@ func New(addr string, h Handlers, s Sessions, staticFS fs.FS, opts Options) *htt
 	protected("POST /notes/{noteId}", h.Note.Update)
 	protected("GET /notes/{noteId}/delete", h.Note.ConfirmDelete)
 	protected("POST /notes/{noteId}/delete", h.Note.Delete)
+
+	// Account: personal data export and account deletion (GDPR rights)
+	protected("GET /account", h.Account.Show)
+	protected("GET /account/export", h.Account.Export)
+	protected("GET /account/delete", h.Account.DeleteForm)
+	protected("POST /account/delete", h.Account.Delete)
 
 	// Any other URL gets the HTML 404 page
 	pages.HandleFunc("/", h.Page.NotFound)

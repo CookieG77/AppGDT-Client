@@ -1,0 +1,28 @@
+{{define "content"}}
+{{$user := .User.User}}
+<h1>Mon compte</h1>
+
+<div class="account">
+    <section class="sheet" aria-labelledby="profile-title">
+        <h2 id="profile-title">Mes informations</h2>
+        <dl class="details-list">
+            <div><dt>Nom ou pseudo</dt><dd>{{$user.Username}}</dd></div>
+            <div><dt>Adresse email</dt><dd>{{$user.Email}}</dd></div>
+            <div><dt>Compte créé le</dt><dd><time datetime="{{isodate $user.CreatedAt}}">{{date $user.CreatedAt}}</time></dd></div>
+        </dl>
+    </section>
+
+    <section class="sheet" aria-labelledby="export-title">
+        <h2 id="export-title">Récupérer mes données</h2>
+        <p>Téléchargez une copie complète de vos données&nbsp;: votre profil, vos espaces et toutes vos notes, dans un fichier JSON que vous pouvez conserver ou importer ailleurs (droit à la portabilité).</p>
+        <p class="account__note">Votre mot de passe n'est jamais exporté.</p>
+        <a class="button" href="/account/export" download>Télécharger mes données (JSON)</a>
+    </section>
+
+    <section class="sheet account__danger" aria-labelledby="delete-title">
+        <h2 id="delete-title">Supprimer mon compte</h2>
+        <p>Votre compte, vos espaces et toutes vos notes seront définitivement effacés (droit à l'effacement). Pensez à télécharger vos données avant.</p>
+        <a class="button button--danger-outline" href="/account/delete">Supprimer mon compte…</a>
+    </section>
+</div>
+{{end}}
