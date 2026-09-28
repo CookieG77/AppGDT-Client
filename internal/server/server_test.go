@@ -687,3 +687,41 @@ func TestNoteOfUnknownSpace(t *testing.T) {
 		}
 	}
 }
+
+// --- Markdown ----------------------------------------------------------------------
+
+// The Markdown rendering happens in the browser: the pages only have to
+// send the raw content and load the scripts, which must be served locally
+// (the CSP forbids external scripts).
+func TestMarkdownScriptsAreServedLocally(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	spacePath := c.createSpace("Notes")
+	token := c.csrfToken(spacePath + "/notes/new")
+	resp, _ := c.post(spacePath+"/notes", url.Values{
+		"csrf_token": {token}, "title": {"Markdown"}, "status": {"todo"},
+		"content": {"# Titre\n\n**gras** <script>alert(1)</script>"},
+	})
+	notePath := resp.Header.Get("Location")
+
+	_, body := c.get(notePath)
+	expectContains(t, body,
+		`data-markdown data-first-heading="2"`,
+		"# Titre",                               // raw Markdown, readable without JavaScript…
+		"&lt;script&gt;alert(1)&lt;/script&gt;", // …and escaped by html/template
+		`<script src="/static/vendor/marked.umd.js" defer></script>`,
+		`<script src="/static/vendor/purify.min.js" defer></script>`,
+		`<script src="/static/js/markdown.js" defer></script>`,
+	)
+
+	_, body = c.get(notePath + "/edit")
+	expectContains(t, body, "data-markdown-editor", `<details class="markdown-help">`)
+
+	for _, path := range []string{"/static/vendor/marked.umd.js", "/static/vendor/purify.min.js", "/static/js/markdown.js"} {
+		resp, _ := c.get(path)
+		expectStatus(t, resp, http.StatusOK)
+		if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/javascript") {
+			t.Errorf("%s: Content-Type = %q", path, ct)
+		}
+	}
+}
