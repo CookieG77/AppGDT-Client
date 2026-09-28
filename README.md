@@ -12,11 +12,12 @@ Navigateur ──HTML / formulaires──▶ Client Go ──JSON + JWT──▶
 
 ## Stack technique
 
-- **Go** (bibliothèque standard uniquement)
+- **Go**
 - **`net/http`** : serveur HTTP et routage (motifs `GET /chemin/{id}` de Go 1.22+)
 - **`html/template`** : rendu des pages, avec échappement automatique contre les failles XSS
 - **`embed`** : templates et fichiers statiques intégrés au binaire
 - **`log/slog`** : logs structurés en JSON
+- **[godotenv](https://github.com/joho/godotenv)** : chargement du fichier `.env` (même bibliothèque que le serveur)
 
 ## Prérequis
 

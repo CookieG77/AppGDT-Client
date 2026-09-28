@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -23,7 +25,7 @@ type APIConfig struct {
 
 func LoadConfig() (*Config, error) {
 
-	if err := loadDotEnv(".env"); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, fmt.Errorf("loading .env file failed: %w", err)
 	}
 
