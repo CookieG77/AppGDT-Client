@@ -1,0 +1,25 @@
+{{define "content"}}
+{{$form := .Data.Form}}
+<div class="auth">
+    <section class="sheet auth__card" aria-labelledby="register-title">
+        <p class="hand auth__eyebrow">Nouveau carnet</p>
+        <h1 id="register-title">Créer un compte</h1>
+        <p class="auth__intro">Tous les champs sont obligatoires.</p>
+
+        {{template "form-errors" $form}}
+
+        <form class="form" method="post" action="/register" novalidate>
+            {{template "csrf" .}}
+
+            {{template "field" dict "Form" $form "Name" "username" "Label" "Nom ou pseudo" "Type" "text" "Autocomplete" "nickname" "Required" true "MaxLength" 50 "Hint" "Affiché dans l'application. 50 caractères maximum."}}
+            {{template "field" dict "Form" $form "Name" "email" "Label" "Adresse email" "Type" "email" "Autocomplete" "email" "Required" true "Hint" "Elle vous servira à vous connecter."}}
+            {{template "field" dict "Form" $form "Name" "password" "Label" "Mot de passe" "Type" "password" "Autocomplete" "new-password" "Required" true "MinLength" 8 "Hint" "Au moins 8 caractères."}}
+            {{template "field" dict "Form" $form "Name" "password_confirm" "Label" "Confirmation du mot de passe" "Type" "password" "Autocomplete" "new-password" "Required" true}}
+
+            <button class="button form__submit" type="submit">Créer mon compte</button>
+        </form>
+
+        <p class="auth__switch">Déjà un compte&nbsp;? <a href="/login">Se connecter</a></p>
+    </section>
+</div>
+{{end}}

@@ -1,0 +1,21 @@
+{{define "content"}}
+<section aria-labelledby="spaces-title">
+    <p class="hand">Bonjour {{.User.User.Username}}</p>
+    <h1 id="spaces-title">Mes espaces</h1>
+
+    {{with .Data.Spaces}}
+    <ul class="space-list">
+        {{range .}}
+        <li class="sheet space-card">
+            <h2 class="space-card__title">{{.Name}}</h2>
+            {{with .Description}}<p class="space-card__description">{{.}}</p>{{end}}
+        </li>
+        {{end}}
+    </ul>
+    {{else}}
+    <div class="sheet sheet--ruled empty-state">
+        <p>Vous n'avez pas encore d'espace.</p>
+    </div>
+    {{end}}
+</section>
+{{end}}

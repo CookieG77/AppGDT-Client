@@ -17,6 +17,7 @@ import (
 	"github.com/CookieG77/AppGDT-Client/internal/config"
 	"github.com/CookieG77/AppGDT-Client/internal/handler"
 	"github.com/CookieG77/AppGDT-Client/internal/server"
+	"github.com/CookieG77/AppGDT-Client/internal/session"
 	"github.com/CookieG77/AppGDT-Client/internal/view"
 	"github.com/CookieG77/AppGDT-Client/web"
 )
@@ -57,9 +58,14 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("loading static files failed: %w", err)
 	}
 
+	// Session cookies are Secure (HTTPS only) when TLS is enabled
+	sessions := session.NewManager(cfg.TLS.Enabled())
+
 	// Creating handlers and server
 	handlers := server.Handlers{
-		Page: handler.NewPageHandler(renderer),
+		Page:  handler.NewPageHandler(renderer),
+		Auth:  handler.NewAuthHandler(api, renderer, sessions),
+		Space: handler.NewSpaceHandler(api, renderer, sessions),
 	}
 
 	// HTTPS between the browser and the client, if a certificate is configured
@@ -75,7 +81,7 @@ func run(logger *slog.Logger) error {
 	}
 
 	addr := cfg.Address + ":" + strconv.Itoa(cfg.Port)
-	srv := server.New(addr, handlers, staticFS, opts)
+	srv := server.New(addr, handlers, server.Sessions{Manager: sessions, API: api}, staticFS, opts)
 
 	// Starting the server in a goroutine to prevent a freeze of the exit signal waiter
 	servErr := make(chan error, 1)
