@@ -1,0 +1,10 @@
+{{/* Fil d'Ariane : liste de liens (Label, URL), la dernière page n'est pas un lien */}}
+{{define "breadcrumb"}}
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+    <ol>
+        {{range .}}
+        <li>{{if .URL}}<a href="{{.URL}}">{{.Label}}</a>{{else}}<span aria-current="page">{{.Label}}</span>{{end}}</li>
+        {{end}}
+    </ol>
+</nav>
+{{end}}

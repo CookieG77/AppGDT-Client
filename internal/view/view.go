@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/CookieG77/AppGDT-Client/internal/session"
 )
@@ -32,6 +33,14 @@ type Page struct {
 	CSRFToken string
 	// Path is the current URL path, used to mark the active link
 	Path string
+	// Breadcrumb is the trail of parent pages, shown above the content
+	Breadcrumb []Crumb
+}
+
+// Crumb is one link of a breadcrumb trail. The current page has no URL.
+type Crumb struct {
+	Label string
+	URL   string
 }
 
 // ErrorData is the content of the error page.
@@ -150,7 +159,17 @@ func writeFallbackError(w http.ResponseWriter) {
 func funcs() template.FuncMap {
 	return template.FuncMap{
 		"dict": dict,
+		"date": frenchDate,
 	}
+}
+
+var frenchMonths = [...]string{"janvier", "février", "mars", "avril", "mai", "juin",
+	"juillet", "août", "septembre", "octobre", "novembre", "décembre"}
+
+// frenchDate formats a date as "28 septembre 2026", in the time zone of the client.
+func frenchDate(t time.Time) string {
+	t = t.Local()
+	return fmt.Sprintf("%d %s %d", t.Day(), frenchMonths[t.Month()-1], t.Year())
 }
 
 // dict builds a map from key/value pairs, to give several named values to

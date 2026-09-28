@@ -26,25 +26,35 @@
 {{/*
   Champ de saisie accessible : libellé toujours visible, aide et erreur reliées
   au champ par aria-describedby, aria-invalid quand le champ est en erreur.
-  Paramètres (via dict) : Form, Name, Label, Type, Hint, Autocomplete,
-  Required, MinLength, MaxLength, Inputmode.
+  Paramètres (via dict) : Form, Name, Label, Type ("text", "email", "password",
+  "textarea"…), Hint, Autocomplete, Required, MinLength, MaxLength, Rows.
 */}}
 {{define "field"}}
 {{- $error := index .Form.Errors .Name -}}
+{{- $describedBy := "" -}}
+{{- if .Hint}}{{$describedBy = printf "field-%s-hint" .Name}}{{end -}}
+{{- if $error}}{{if $describedBy}}{{$describedBy = printf "%s field-%s-error" $describedBy .Name}}{{else}}{{$describedBy = printf "field-%s-error" .Name}}{{end}}{{end -}}
 <div class="field{{if $error}} field--invalid{{end}}">
     <label class="field__label" for="field-{{.Name}}">
         {{- .Label}}{{if not .Required}} <span class="field__optional">(facultatif)</span>{{end -}}
     </label>
     {{with .Hint}}<p class="field__hint" id="field-{{$.Name}}-hint">{{.}}</p>{{end}}
     {{if $error}}<p class="field__error" id="field-{{.Name}}-error"><span class="visually-hidden">Erreur&nbsp;: </span>{{$error}}</p>{{end}}
+    {{- if eq .Type "textarea"}}
+    <textarea class="field__input field__input--textarea" id="field-{{.Name}}" name="{{.Name}}" rows="{{or .Rows 4}}"
+        {{- if .Required}} required aria-required="true"{{end}}
+        {{- with .MaxLength}} maxlength="{{.}}"{{end}}
+        {{- if $error}} aria-invalid="true"{{end}}
+        {{- with $describedBy}} aria-describedby="{{.}}"{{end}}>{{index .Form.Values .Name}}</textarea>
+    {{- else}}
     <input class="field__input" id="field-{{.Name}}" name="{{.Name}}" type="{{.Type}}"
         {{- if ne .Type "password"}} value="{{index .Form.Values .Name}}"{{end}}
         {{- with .Autocomplete}} autocomplete="{{.}}"{{end}}
-        {{- with .Inputmode}} inputmode="{{.}}"{{end}}
         {{- if .Required}} required aria-required="true"{{end}}
         {{- with .MinLength}} minlength="{{.}}"{{end}}
         {{- with .MaxLength}} maxlength="{{.}}"{{end}}
         {{- if $error}} aria-invalid="true"{{end}}
-        {{- if or .Hint $error}} aria-describedby="{{if .Hint}}field-{{.Name}}-hint{{end}}{{if and .Hint $error}} {{end}}{{if $error}}field-{{.Name}}-error{{end}}"{{end}}>
+        {{- with $describedBy}} aria-describedby="{{.}}"{{end}}>
+    {{- end}}
 </div>
 {{end}}
