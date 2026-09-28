@@ -158,9 +158,26 @@ func writeFallbackError(w http.ResponseWriter) {
 // funcs returns the helpers available in every template.
 func funcs() template.FuncMap {
 	return template.FuncMap{
-		"dict": dict,
-		"date": frenchDate,
+		"dict":    dict,
+		"date":    frenchDate,
+		"isodate": func(t time.Time) string { return t.Format(time.RFC3339) },
+		"excerpt": excerpt,
 	}
+}
+
+// excerpt returns the beginning of a text on a single line, cut after at
+// most max characters (on a word boundary when possible).
+func excerpt(text string, max int) string {
+	text = strings.Join(strings.Fields(text), " ")
+	runes := []rune(text)
+	if len(runes) <= max {
+		return text
+	}
+	cut := string(runes[:max])
+	if i := strings.LastIndex(cut, " "); i > max/2 {
+		cut = cut[:i]
+	}
+	return strings.TrimRight(cut, " ,;:.") + "…"
 }
 
 var frenchMonths = [...]string{"janvier", "février", "mars", "avril", "mai", "juin",

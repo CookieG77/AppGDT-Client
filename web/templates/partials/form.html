@@ -58,3 +58,26 @@
     {{- end}}
 </div>
 {{end}}
+
+{{/*
+  Choix de l'état d'une note : groupe de boutons radio dans un fieldset,
+  la légende sert de libellé commun. Le premier bouton porte l'id
+  "field-status" pour que le lien du résumé des erreurs y mène.
+  Paramètres (via dict) : Form, Statuses.
+*/}}
+{{define "status-field"}}
+{{- $error := index .Form.Errors "status" -}}
+{{- $current := index .Form.Values "status" -}}
+<fieldset class="field status-field{{if $error}} field--invalid{{end}}"{{if $error}} aria-describedby="field-status-error"{{end}}>
+    <legend class="field__label">État</legend>
+    {{if $error}}<p class="field__error" id="field-status-error"><span class="visually-hidden">Erreur&nbsp;: </span>{{$error}}</p>{{end}}
+    <div class="status-options">
+        {{range $i, $status := .Statuses}}
+        <label class="status-option">
+            <input type="radio" name="status" value="{{$status}}" id="field-status{{if $i}}-{{$status}}{{end}}"{{if eq (print $status) $current}} checked{{end}}>
+            <span class="badge badge--{{$status}}">{{$status.Label}}</span>
+        </label>
+        {{end}}
+    </div>
+</fieldset>
+{{end}}
