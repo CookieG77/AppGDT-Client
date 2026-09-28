@@ -33,6 +33,7 @@ Copier `.env.example` en `.env` puis adapter les valeurs. Les variables déjà d
 | `PORT`         | `3000`                  | Port d'écoute du client       |
 | `ADDRESS`      | `localhost`             | Adresse d'écoute du client    |
 | `API_BASE_URL` | `http://localhost:8080` | URL de base de l'API serveur  |
+| `API_TIMEOUT`  | `5s`                    | Durée maximale d'un appel à l'API |
 
 ## Lancement
 
@@ -41,6 +42,12 @@ go run ./cmd/client
 ```
 
 Le client est ensuite accessible sur <http://localhost:3000>.
+
+Pour lancer les tests :
+
+```bash
+go test ./...
+```
 
 Pour produire un exécutable :
 
@@ -53,6 +60,7 @@ go build -o gdt-client ./cmd/client
 ```
 cmd/client/          Point d'entrée : configuration, templates, routes, arrêt propre
 internal/
+  apiclient/         Client HTTP typé vers l'API (modèles, appels, erreurs de l'API)
   config/            Chargement de la configuration (.env + variables d'environnement)
   handler/           Handlers HTTP : lisent la requête, appellent l'API, rendent une page
   middleware/        Logs des requêtes, en-têtes de sécurité, récupération des panics
