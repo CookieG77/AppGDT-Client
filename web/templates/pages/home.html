@@ -1,6 +1,55 @@
 {{define "content"}}
-<section class="card">
-    <h1>Bienvenue sur GDT</h1>
-    <p>Organisez vos notes par espaces : devoirs, jobs, personnel, projets…</p>
+<section class="hero" aria-labelledby="hero-title">
+    <div>
+        <p class="hand hero__eyebrow">Votre carnet, en ligne</p>
+        <h1 id="hero-title" class="hero__title">Vos notes, rangées <em>par espaces</em>.</h1>
+        <p class="hero__lead">Devoirs, recherche d'emploi, projets perso… Créez un espace pour chaque sujet, ajoutez-y vos notes et suivez leur avancement d'un coup d'œil.</p>
+        <div class="button-group">
+            <a class="button" href="/register">Créer un compte</a>
+            <a class="button button--secondary" href="/login">J'ai déjà un compte</a>
+        </div>
+    </div>
+
+    {{/* Aperçu purement décoratif : masqué aux lecteurs d'écran, qui ont déjà le texte ci-contre */}}
+    <div class="sheet sheet--ruled preview" aria-hidden="true">
+        <p class="preview__title">Devoirs</p>
+        <ul class="preview__list">
+            <li><span>Exercices de maths p.52</span><span class="badge badge--done">Terminé</span></li>
+            <li><span>Exposé d'histoire</span><span class="badge badge--in_progress">En cours</span></li>
+            <li><span>Réviser l'anglais</span><span class="badge badge--todo">Non fait</span></li>
+        </ul>
+    </div>
+</section>
+
+<section class="section" aria-labelledby="steps-title">
+    <h2 id="steps-title">Comment ça marche&nbsp;?</h2>
+    <p class="section__intro">Trois étapes suffisent pour remettre de l'ordre dans vos idées.</p>
+    <ol class="steps">
+        <li class="step sheet">
+            <h3>Créez un espace</h3>
+            <p>Un espace regroupe les notes d'un même sujet&nbsp;: «&nbsp;Devoirs&nbsp;», «&nbsp;Jobs&nbsp;», «&nbsp;Personnel&nbsp;»…</p>
+        </li>
+        <li class="step sheet">
+            <h3>Ajoutez vos notes</h3>
+            <p>Chaque note a un titre et un contenu, et reste rangée dans l'espace où vous l'avez créée.</p>
+        </li>
+        <li class="step sheet">
+            <h3>Suivez l'avancement</h3>
+            <p>Indiquez l'état de chaque note et voyez tout de suite ce qu'il reste à faire.</p>
+            <p class="badges">
+                <span class="badge badge--todo">Non fait</span>
+                <span class="badge badge--in_progress">En cours</span>
+                <span class="badge badge--done">Terminé</span>
+            </p>
+        </li>
+    </ol>
+</section>
+
+<section class="callout" aria-labelledby="privacy-title">
+    <div>
+        <h2 id="privacy-title">Vos notes restent les vôtres</h2>
+        <p>Vous seul pouvez consulter vos espaces et vos notes. Vous pouvez exporter ou supprimer vos données à tout moment.</p>
+    </div>
+    <a class="button button--secondary" href="/register">Commencer</a>
 </section>
 {{end}}
