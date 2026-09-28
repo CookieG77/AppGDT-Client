@@ -1,4 +1,9 @@
-package server
+// Package tests holds the end-to-end tests of the client: they start the
+// whole client (routes, middlewares, handlers, templates) on top of a fake
+// API kept in memory, and browse it like a user would, with cookies and forms.
+// The unit tests stay next to the code they test (*_test.go files), as Go
+// requires to reach unexported functions.
+package tests
 
 import (
 	"encoding/json"
@@ -20,6 +25,7 @@ import (
 
 	"github.com/CookieG77/AppGDT-Client/internal/apiclient"
 	"github.com/CookieG77/AppGDT-Client/internal/handler"
+	"github.com/CookieG77/AppGDT-Client/internal/server"
 	"github.com/CookieG77/AppGDT-Client/internal/session"
 	"github.com/CookieG77/AppGDT-Client/internal/view"
 	"github.com/CookieG77/AppGDT-Client/web"
@@ -235,14 +241,14 @@ func newTestClient(t *testing.T) *testClient {
 	apiClient := apiclient.New(apiSrv.URL, 2*time.Second)
 	sessions := session.NewManager(false)
 
-	srv := New("", Handlers{
+	srv := server.New("", server.Handlers{
 		Page:  handler.NewPageHandler(renderer),
 		Auth:  handler.NewAuthHandler(apiClient, renderer, sessions),
 		Space: handler.NewSpaceHandler(apiClient, renderer, sessions),
 		Note:  handler.NewNoteHandler(apiClient, renderer, sessions),
 
 		Account: handler.NewAccountHandler(apiClient, renderer, sessions),
-	}, Sessions{Manager: sessions, API: apiClient}, staticFS, Options{})
+	}, server.Sessions{Manager: sessions, API: apiClient}, staticFS, server.Options{})
 
 	clientSrv := httptest.NewServer(srv.Handler)
 	t.Cleanup(clientSrv.Close)

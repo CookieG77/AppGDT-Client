@@ -68,7 +68,10 @@ Les commandes courantes sont regroupées dans un `Makefile` (`make help` pour la
 
 ### Tests
 
-`make test` lance les tests Go : client HTTP de l'API (faux serveur `httptest`) et parcours complets des pages (connexion, CSRF, espaces, notes, compte, confidentialité) contre une fausse API en mémoire. Ils ne nécessitent ni le serveur ni la base de données.
+`make test` lance tous les tests Go. Ils ne nécessitent ni le serveur ni la base de données.
+
+- **Tests unitaires**, à côté du code qu'ils testent (fichiers `*_test.go`), comme le veut Go pour accéder aux fonctions internes : client de l'API (faux serveur `httptest`, HTTPS avec autorité personnalisée), configuration, cookies de session et jeton CSRF, rendu des templates (échappement), redirections après connexion, repérage des tâches dans le Markdown.
+- **Tests de bout en bout**, regroupés dans `tests/` : tout le client est démarré devant une fausse API en mémoire et parcouru comme par un utilisateur (cookies, formulaires) : connexion, CSRF, espaces, notes, filtres, cases à cocher, compte, confidentialité.
 
 ## HTTPS (optionnel)
 
@@ -173,9 +176,10 @@ internal/
   config/            Chargement de la configuration (.env + variables d'environnement)
   handler/           Handlers HTTP : lisent la requête, appellent l'API, rendent une page
   middleware/        Logs, en-têtes de sécurité, panics, session, pages protégées, CSRF
-  server/            Déclaration des routes et création du serveur HTTP (+ tests de bout en bout)
+  server/            Déclaration des routes et création du serveur HTTP
   session/           Cookies (JWT, message flash, jeton CSRF) et données de la requête
   view/              Chargement des templates et rendu des pages
+tests/               Tests de bout en bout du client (fausse API en mémoire)
 web/
   templates/
     layouts/         Squelette HTML commun (base.html)
