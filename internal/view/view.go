@@ -14,10 +14,12 @@ import (
 )
 
 // Page is the data given to every template.
-// Title is shown in the <title> tag and Data holds the page-specific content.
+// Title is shown in the <title> tag, Description in the meta description
+// (a default one is used when empty) and Data holds the page-specific content.
 type Page struct {
-	Title string
-	Data  any
+	Title       string
+	Description string
+	Data        any
 }
 
 // ErrorData is the content of the error page.

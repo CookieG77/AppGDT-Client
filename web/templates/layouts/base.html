@@ -4,14 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{if .Title}}{{.Title}} · {{end}}GDT</title>
+    <meta name="description" content="{{if .Description}}{{.Description}}{{else}}GDT, votre carnet de notes en ligne : organisez vos notes par espaces et suivez leur avancement.{{end}}">
+    <meta name="theme-color" content="#f6f0e3">
+    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="/static/fonts/source-sans-3-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
-    {{template "nav" .}}
-    <main class="container">
-        {{template "content" .}}
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    {{template "header" .}}
+    <main id="contenu" class="site-main" tabindex="-1">
+        <div class="container">
+            {{template "content" .}}
+        </div>
     </main>
-    <footer class="container footer">GDT — gestion de notes par espaces</footer>
+    {{template "footer" .}}
 </body>
 </html>
 {{end}}

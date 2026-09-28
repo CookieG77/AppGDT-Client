@@ -1,0 +1,16 @@
+{{define "header"}}
+<header class="site-header">
+    <div class="container site-header__inner">
+        <a class="brand" href="/" aria-label="GDT, retour à l'accueil">
+            {{template "logo"}}
+            <span class="brand__name" aria-hidden="true">GDT</span>
+        </a>
+        <nav class="site-nav" aria-label="Navigation principale">
+            <ul>
+                <li><a href="/login">Se connecter</a></li>
+                <li class="site-nav__register"><a class="button button--small" href="/register">Créer un compte</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+{{end}}
