@@ -1,0 +1,13 @@
+{{define "content"}}
+{{$space := .Data.Space}}
+<div class="page-header">
+    <div>
+        <h1>{{$space.Name}}</h1>
+        {{with $space.Description}}<p class="page-header__lead">{{.}}</p>{{end}}
+    </div>
+    <ul class="actions" aria-label="Actions sur l'espace">
+        <li><a class="button button--secondary button--small" href="/spaces/{{$space.ID}}/edit">Modifier<span class="visually-hidden"> l'espace</span></a></li>
+        <li><a class="button button--danger-outline button--small" href="/spaces/{{$space.ID}}/delete">Supprimer<span class="visually-hidden"> l'espace</span></a></li>
+    </ul>
+</div>
+{{end}}

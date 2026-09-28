@@ -1,0 +1,16 @@
+{{define "content"}}
+{{$d := .Data}}
+<div class="form-page">
+    <section class="sheet confirm" aria-labelledby="confirm-title">
+        <h1 id="confirm-title">{{$d.Heading}}</h1>
+        <p class="confirm__warning"><span class="confirm__icon" aria-hidden="true">!</span>{{$d.Message}}</p>
+        <form method="post" action="{{$d.Action}}">
+            {{template "csrf" .}}
+            <div class="form__actions">
+                <button class="button button--danger" type="submit">{{$d.ButtonLabel}}</button>
+                <a class="button button--secondary" href="{{$d.CancelURL}}">Annuler</a>
+            </div>
+        </form>
+    </section>
+</div>
+{{end}}

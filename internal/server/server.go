@@ -52,7 +52,20 @@ func New(addr string, h Handlers, s Sessions, staticFS fs.FS, opts Options) *htt
 	pages.HandleFunc("POST /logout", h.Auth.Logout)
 
 	// Protected pages
-	pages.Handle("GET /spaces", requireAuth(http.HandlerFunc(h.Space.List)))
+	protected := func(pattern string, hf http.HandlerFunc) {
+		pages.Handle(pattern, requireAuth(hf))
+	}
+
+	// Spaces (FT2). HTML forms only send GET and POST: the client turns them
+	// into PUT and DELETE calls to the API.
+	protected("GET /spaces", h.Space.List)
+	protected("GET /spaces/new", h.Space.NewForm)
+	protected("POST /spaces", h.Space.Create)
+	protected("GET /spaces/{spaceId}", h.Space.Show)
+	protected("GET /spaces/{spaceId}/edit", h.Space.EditForm)
+	protected("POST /spaces/{spaceId}", h.Space.Update)
+	protected("GET /spaces/{spaceId}/delete", h.Space.ConfirmDelete)
+	protected("POST /spaces/{spaceId}/delete", h.Space.Delete)
 
 	// Any other URL gets the HTML 404 page
 	pages.HandleFunc("/", h.Page.NotFound)

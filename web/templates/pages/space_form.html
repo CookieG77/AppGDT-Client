@@ -1,0 +1,23 @@
+{{define "content"}}
+{{$form := .Data.Form}}
+{{$space := .Data.Space}}
+<div class="form-page">
+    <section class="sheet" aria-labelledby="form-title">
+        <h1 id="form-title">{{if $space}}Modifier l'espace{{else}}Nouvel espace{{end}}</h1>
+
+        {{template "form-errors" $form}}
+
+        <form class="form" method="post" action="{{if $space}}/spaces/{{$space.ID}}{{else}}/spaces{{end}}" novalidate>
+            {{template "csrf" .}}
+
+            {{template "field" dict "Form" $form "Name" "name" "Label" "Nom" "Type" "text" "Required" true "MaxLength" 100 "Autocomplete" "off" "Hint" "Par exemple « Devoirs », « Jobs » ou « Personnel ». 100 caractères maximum."}}
+            {{template "field" dict "Form" $form "Name" "description" "Label" "Description" "Type" "textarea" "Rows" 4 "MaxLength" 1000 "Hint" "Ce que vous rangerez dans cet espace. 1000 caractères maximum."}}
+
+            <div class="form__actions">
+                <button class="button" type="submit">{{if $space}}Enregistrer{{else}}Créer l'espace{{end}}</button>
+                <a class="button button--secondary" href="{{if $space}}/spaces/{{$space.ID}}{{else}}/spaces{{end}}">Annuler</a>
+            </div>
+        </form>
+    </section>
+</div>
+{{end}}

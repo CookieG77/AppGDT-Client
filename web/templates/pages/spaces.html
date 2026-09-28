@@ -1,21 +1,27 @@
 {{define "content"}}
-<section aria-labelledby="spaces-title">
-    <p class="hand">Bonjour {{.User.User.Username}}</p>
-    <h1 id="spaces-title">Mes espaces</h1>
-
-    {{with .Data.Spaces}}
-    <ul class="space-list">
-        {{range .}}
-        <li class="sheet space-card">
-            <h2 class="space-card__title">{{.Name}}</h2>
-            {{with .Description}}<p class="space-card__description">{{.}}</p>{{end}}
-        </li>
-        {{end}}
-    </ul>
-    {{else}}
-    <div class="sheet sheet--ruled empty-state">
-        <p>Vous n'avez pas encore d'espace.</p>
+<div class="page-header">
+    <div>
+        <p class="hand">Bonjour {{.User.User.Username}}</p>
+        <h1 id="spaces-title">Mes espaces</h1>
     </div>
+    <a class="button" href="/spaces/new">Nouvel espace</a>
+</div>
+
+{{with .Data.Spaces}}
+<ul class="card-list" aria-labelledby="spaces-title">
+    {{range .}}
+    <li class="sheet card">
+        <h2 class="card__title"><a class="card__link" href="/spaces/{{.ID}}">{{.Name}}</a></h2>
+        {{with .Description}}<p class="card__text">{{.}}</p>{{end}}
+        <p class="card__meta">Modifié le {{date .UpdatedAt}}</p>
+    </li>
     {{end}}
-</section>
+</ul>
+{{else}}
+<div class="sheet sheet--ruled empty-state">
+    <h2 class="empty-state__title">Votre carnet est vide</h2>
+    <p>Créez un premier espace pour y ranger vos notes&nbsp;: «&nbsp;Devoirs&nbsp;», «&nbsp;Jobs&nbsp;», «&nbsp;Personnel&nbsp;»…</p>
+    <a class="button" href="/spaces/new">Créer mon premier espace</a>
+</div>
+{{end}}
 {{end}}
