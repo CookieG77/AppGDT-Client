@@ -152,6 +152,7 @@ Le contenu des notes peut être mis en forme en Markdown. **L'API n'est pas conc
 ```
 cmd/client/          Point d'entrée : configuration, templates, routes, arrêt propre
 Makefile             Commandes courantes (make help)
+LICENSE              Licence (tous droits réservés)
 internal/
   apiclient/         Client HTTP typé vers l'API (modèles, appels, erreurs de l'API)
   config/            Chargement de la configuration (.env + variables d'environnement)
@@ -167,3 +168,7 @@ web/
     pages/           Une page par fichier, qui définit le bloc "content"
   static/            CSS, JavaScript (rendu Markdown), bibliothèques (vendor/), polices et images
 ```
+
+## Licence
+
+Tous droits réservés. Le code est public pour consultation uniquement : toute réutilisation, copie, modification ou diffusion, totale ou partielle, nécessite l'autorisation écrite préalable de l'auteur. Voir [LICENSE](LICENSE).

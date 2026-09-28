@@ -1,0 +1,23 @@
+Tous droits réservés — All rights reserved
+
+Copyright (c) 2026 Maxime (CookieG77)
+
+Ce logiciel, son code source et sa documentation sont la propriété exclusive
+de leur auteur. Le dépôt est rendu public uniquement pour permettre sa
+consultation.
+
+Sans l'autorisation écrite et préalable de l'auteur, il est interdit de
+copier, reproduire, modifier, adapter, traduire, publier, distribuer,
+sous-licencier, vendre, héberger ou exploiter de quelque manière que ce soit
+tout ou partie de ce logiciel, de son code source ou de sa documentation,
+quelle qu'en soit la finalité, commerciale ou non.
+
+Aucune licence ni aucun droit n'est accordé implicitement par la mise à
+disposition de ce dépôt.
+
+Pour toute demande d'autorisation : https://github.com/CookieG77
+
+Composants tiers inclus dans ce dépôt, qui restent soumis à leur propre licence :
+- polices Fraunces, Source Sans 3 et Caveat (web/static/fonts/, SIL Open Font License 1.1) ;
+- marked (MIT) et DOMPurify (Apache-2.0 ou MPL-2.0) dans web/static/vendor/.
+Les textes de ces licences sont fournis à côté des fichiers concernés.
