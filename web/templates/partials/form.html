@@ -27,7 +27,8 @@
   Champ de saisie accessible : libellé toujours visible, aide et erreur reliées
   au champ par aria-describedby, aria-invalid quand le champ est en erreur.
   Paramètres (via dict) : Form, Name, Label, Type ("text", "email", "password",
-  "textarea"…), Hint, Autocomplete, Required, MinLength, MaxLength, Rows.
+  "textarea"…), Hint, Autocomplete, Required, MinLength, MaxLength, Rows,
+  Markdown (zone de texte avec onglets Écrire / Aperçu quand JavaScript est actif).
 */}}
 {{define "field"}}
 {{- $error := index .Form.Errors .Name -}}
@@ -44,6 +45,7 @@
     <textarea class="field__input field__input--textarea" id="field-{{.Name}}" name="{{.Name}}" rows="{{or .Rows 4}}"
         {{- if .Required}} required aria-required="true"{{end}}
         {{- with .MaxLength}} maxlength="{{.}}"{{end}}
+        {{- if .Markdown}} data-markdown-editor{{end}}
         {{- if $error}} aria-invalid="true"{{end}}
         {{- with $describedBy}} aria-describedby="{{.}}"{{end}}>{{index .Form.Values .Name}}</textarea>
     {{- else}}
@@ -80,4 +82,11 @@
         {{end}}
     </div>
 </fieldset>
+{{end}}
+
+{{/* Scripts du rendu Markdown (servis par le client, autorisés par la CSP) */}}
+{{define "markdown-scripts"}}
+<script src="/static/vendor/marked.umd.js" defer></script>
+<script src="/static/vendor/purify.min.js" defer></script>
+<script src="/static/js/markdown.js" defer></script>
 {{end}}

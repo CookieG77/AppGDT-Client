@@ -28,7 +28,7 @@
         <li class="sheet card note-card">
             <h3 class="card__title"><a class="card__link" href="/notes/{{.ID}}">{{.Title}}</a></h3>
             <p><span class="badge badge--{{.Status}}"><span class="visually-hidden">État&nbsp;: </span>{{.Status.Label}}</span></p>
-            {{with .Content}}<p class="card__text">{{excerpt . 160}}</p>{{end}}
+            {{with .Content}}<p class="card__text" data-markdown-excerpt>{{excerpt . 160}}</p>{{end}}
             <p class="card__meta">Modifiée le <time datetime="{{isodate .UpdatedAt}}">{{date .UpdatedAt}}</time></p>
         </li>
         {{end}}
@@ -41,3 +41,5 @@
     {{end}}
 </section>
 {{end}}
+
+{{define "scripts"}}{{template "markdown-scripts"}}{{end}}

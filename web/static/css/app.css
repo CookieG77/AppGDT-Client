@@ -709,6 +709,94 @@ main:focus { outline: none; }
 .status-option input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--accent); }
 .status-option input:focus-visible { outline: none; }
 
+/* --- Markdown (rendu dans le navigateur, voir /static/js/markdown.js) -------- */
+.note__content.markdown { white-space: normal; }
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+.markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
+    margin: var(--space-5) 0 var(--space-2);
+}
+.markdown h2 { font-size: 1.5rem; }
+.markdown h3 { font-size: 1.25rem; }
+.markdown h4, .markdown h5, .markdown h6 { font-size: 1.0625rem; }
+.markdown p, .markdown ul, .markdown ol, .markdown blockquote, .markdown pre, .markdown table {
+    margin: 0 0 var(--space-3);
+}
+.markdown ul, .markdown ol { padding-left: var(--space-5); }
+.markdown li + li { margin-top: var(--space-1); }
+.markdown li:has(> input[type="checkbox"]) { list-style: none; margin-left: calc(-1 * var(--space-4)); }
+.markdown input[type="checkbox"] { margin: 0 var(--space-2) 0 0; accent-color: var(--success); }
+.markdown blockquote {
+    padding: var(--space-2) var(--space-4);
+    border-left: 4px solid var(--margin);
+    color: var(--ink-soft);
+    font-style: italic;
+}
+.markdown code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: var(--todo-bg);
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+}
+.markdown pre {
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--sheet);
+    overflow-x: auto;
+}
+.markdown pre code { padding: 0; background: none; color: inherit; }
+.markdown table { border-collapse: collapse; display: block; overflow-x: auto; }
+.markdown th, .markdown td { padding: var(--space-1) var(--space-3); border: 1px solid var(--line); text-align: left; }
+.markdown th { background: var(--todo-bg); }
+.markdown img { max-width: 100%; height: auto; }
+.markdown hr { border: 0; border-top: 2px dashed var(--line); margin: var(--space-5) 0; }
+
+/* Onglets Écrire / Aperçu */
+.editor-tabs { display: flex; gap: var(--space-1); margin-top: var(--space-1); }
+.editor-tab {
+    min-height: var(--tap);
+    padding: var(--space-1) var(--space-4);
+    border: 2px solid var(--line);
+    border-bottom: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--paper);
+    color: var(--ink-soft);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.editor-tab[aria-selected="true"] { background: #fff; border-color: var(--ink-soft); color: var(--ink); }
+.field--editor .field__input--textarea { border-top-left-radius: 0; }
+.editor-preview {
+    min-height: 16rem;
+    padding: var(--space-3);
+    border: 2px solid var(--ink-soft);
+    border-radius: 0 var(--radius) var(--radius) var(--radius);
+    background: #fff;
+    overflow-wrap: anywhere;
+}
+.editor-preview__empty { color: var(--ink-soft); }
+
+/* Aide Markdown repliable */
+.markdown-help {
+    margin-top: calc(-1 * var(--space-3));
+    font-size: 0.9375rem;
+}
+.markdown-help summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+}
+.markdown-help table { width: 100%; border-collapse: collapse; margin: var(--space-2) 0; }
+.markdown-help th, .markdown-help td { padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.markdown-help code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
+.markdown-help p { margin: 0; color: var(--ink-soft); }
+
 /* Boutons de suppression */
 .button--danger { background: var(--danger); border-color: var(--danger); }
 .button--danger:hover { background: #82191d; border-color: #82191d; }

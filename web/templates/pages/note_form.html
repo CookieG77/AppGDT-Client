@@ -14,7 +14,8 @@
 
             {{template "field" dict "Form" $form "Name" "title" "Label" "Titre" "Type" "text" "Required" true "MaxLength" 200 "Autocomplete" "off"}}
             {{template "status-field" dict "Form" $form "Statuses" .Data.Statuses}}
-            {{template "field" dict "Form" $form "Name" "content" "Label" "Contenu" "Type" "textarea" "Rows" 12 "MaxLength" 50000 "Hint" "Texte libre, 50 000 caractères maximum."}}
+            {{template "field" dict "Form" $form "Name" "content" "Label" "Contenu" "Type" "textarea" "Rows" 12 "MaxLength" 50000 "Markdown" true "Hint" "Mise en forme Markdown possible (voir l'aide ci-dessous). 50 000 caractères maximum."}}
+            {{template "markdown-help"}}
 
             <div class="form__actions">
                 <button class="button" type="submit">{{if $note}}Enregistrer{{else}}Créer la note{{end}}</button>
@@ -24,3 +25,5 @@
     </section>
 </div>
 {{end}}
+
+{{define "scripts"}}{{template "markdown-scripts"}}{{end}}

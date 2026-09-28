@@ -18,7 +18,7 @@
 
     <div class="sheet sheet--ruled note__sheet">
         {{with $note.Content}}
-        <div class="note__content" id="note-content">{{.}}</div>
+        <div class="note__content" id="note-content" data-markdown data-first-heading="2">{{.}}</div>
         {{else}}
         <p class="note__empty">Cette note n'a pas encore de contenu. <a href="/notes/{{$note.ID}}/edit">Ajouter du contenu</a></p>
         {{end}}
@@ -27,3 +27,5 @@
     <p class="note__back"><a href="/spaces/{{.Data.Space.ID}}">← Retour à l'espace {{.Data.Space.Name}}</a></p>
 </article>
 {{end}}
+
+{{define "scripts"}}{{template "markdown-scripts"}}{{end}}

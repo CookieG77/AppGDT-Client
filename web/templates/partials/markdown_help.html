@@ -1,0 +1,25 @@
+{{/* Aide Markdown repliable : <details> fonctionne sans JavaScript */}}
+{{define "markdown-help"}}
+<details class="markdown-help">
+    <summary>Aide à la mise en forme (Markdown)</summary>
+    <table>
+        <caption class="visually-hidden">Syntaxe Markdown prise en charge</caption>
+        <thead>
+            <tr><th scope="col">Vous écrivez</th><th scope="col">Vous obtenez</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>**gras**</code></td><td><strong>gras</strong></td></tr>
+            <tr><td><code>*italique*</code></td><td><em>italique</em></td></tr>
+            <tr><td><code>~~barré~~</code></td><td><del>barré</del></td></tr>
+            <tr><td><code># Titre</code>, <code>## Sous-titre</code></td><td>Titres</td></tr>
+            <tr><td><code>- élément</code></td><td>Liste à puces</td></tr>
+            <tr><td><code>1. élément</code></td><td>Liste numérotée</td></tr>
+            <tr><td><code>- [ ] tâche</code>, <code>- [x] faite</code></td><td>Liste de tâches</td></tr>
+            <tr><td><code>[texte](https://exemple.fr)</code></td><td>Lien</td></tr>
+            <tr><td><code>`code`</code></td><td><code>code</code></td></tr>
+            <tr><td><code>&gt; citation</code></td><td>Citation</td></tr>
+        </tbody>
+    </table>
+    <p>Le texte est enregistré tel quel&nbsp;: la mise en forme est appliquée à l'affichage.</p>
+</details>
+{{end}}

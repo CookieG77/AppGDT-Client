@@ -165,10 +165,12 @@ func funcs() template.FuncMap {
 	}
 }
 
-// excerpt returns the beginning of a text on a single line, cut after at
-// most max characters (on a word boundary when possible).
+// excerpt returns the beginning of a text, cut after at most max characters
+// (on a word boundary when possible). Line breaks are kept so that the
+// Markdown structure survives for the rendering in the browser; HTML shows
+// the excerpt on one line anyway.
 func excerpt(text string, max int) string {
-	text = strings.Join(strings.Fields(text), " ")
+	text = strings.TrimSpace(text)
 	runes := []rune(text)
 	if len(runes) <= max {
 		return text
