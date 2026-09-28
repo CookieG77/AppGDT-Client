@@ -1,0 +1,119 @@
+{{define "content"}}
+<article class="prose" aria-labelledby="privacy-title">
+    <p class="hand">Vos données, en toute transparence</p>
+    <h1 id="privacy-title">Confidentialité</h1>
+    <p class="prose__lead">Cette page explique quelles données GDT conserve, pourquoi, combien de temps, et comment exercer vos droits, conformément au Règlement général sur la protection des données (RGPD).</p>
+
+    <aside class="callout prose__summary" aria-labelledby="summary-title">
+        <div>
+            <h2 id="summary-title">En bref</h2>
+            <ul>
+                <li>Nous ne conservons que ce qui est nécessaire pour faire fonctionner votre carnet.</li>
+                <li>Vos notes ne sont visibles que par vous. Rien n'est vendu, partagé ni utilisé pour de la publicité.</li>
+                <li>Aucun cookie de mesure d'audience ni de publicité&nbsp;: uniquement des cookies indispensables.</li>
+                <li>Vous pouvez télécharger ou supprimer toutes vos données à tout moment depuis <a href="/account">Mon compte</a>.</li>
+            </ul>
+        </div>
+    </aside>
+
+    <nav class="toc" aria-label="Sommaire">
+        <h2 class="toc__title">Sommaire</h2>
+        <ol>
+            <li><a href="#donnees">Données collectées</a></li>
+            <li><a href="#finalites">Utilisation et base légale</a></li>
+            <li><a href="#conservation">Durée de conservation</a></li>
+            <li><a href="#destinataires">Qui y a accès&nbsp;?</a></li>
+            <li><a href="#cookies">Cookies</a></li>
+            <li><a href="#securite">Sécurité</a></li>
+            <li><a href="#droits">Vos droits</a></li>
+        </ol>
+    </nav>
+
+    <section id="donnees" aria-labelledby="donnees-title">
+        <h2 id="donnees-title">1. Données collectées</h2>
+        <div class="table-wrapper" tabindex="0" role="region" aria-label="Tableau des données conservées">
+            <table>
+                <caption class="visually-hidden">Données conservées par GDT</caption>
+                <thead>
+                    <tr><th scope="col">Données</th><th scope="col">D'où viennent-elles&nbsp;?</th></tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row">Adresse email</th><td>Saisie à l'inscription, elle sert d'identifiant de connexion.</td></tr>
+                    <tr><th scope="row">Nom ou pseudo</th><td>Saisi à l'inscription, affiché dans l'application.</td></tr>
+                    <tr><th scope="row">Mot de passe</th><td>Saisi à l'inscription. Il n'est jamais conservé en clair&nbsp;: seule une empreinte (bcrypt) est enregistrée, qui ne permet pas de le retrouver.</td></tr>
+                    <tr><th scope="row">Espaces et notes</th><td>Tout ce que vous y écrivez&nbsp;: noms, descriptions, titres, contenus et états des notes, avec leurs dates de création et de modification.</td></tr>
+                    <tr><th scope="row">Journaux techniques</th><td>Pour chaque requête reçue par le serveur&nbsp;: date, adresse IP, page demandée, identifiant de votre compte, code de réponse et durée. Les événements de sécurité (connexions refusées, suppression de compte…) y sont aussi notés.</td></tr>
+                    <tr><th scope="row">Tentatives de connexion échouées</th><td>Comptées par adresse email et par adresse IP, pour bloquer temporairement les tentatives répétées.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>GDT ne collecte aucune autre donnée&nbsp;: pas de géolocalisation, pas de profilage, pas d'outil de statistiques.</p>
+    </section>
+
+    <section id="finalites" aria-labelledby="finalites-title">
+        <h2 id="finalites-title">2. Utilisation et base légale</h2>
+        <ul>
+            <li><strong>Fournir le service</strong> (créer votre compte, vous connecter, enregistrer et afficher vos espaces et vos notes)&nbsp;: ces traitements sont nécessaires à l'exécution du service que vous demandez en créant un compte (article 6.1.b du RGPD).</li>
+            <li><strong>Protéger le service et vos données</strong> (journaux techniques, blocage des tentatives de connexion répétées)&nbsp;: ces traitements reposent sur l'intérêt légitime à assurer la sécurité de l'application (article 6.1.f du RGPD).</li>
+        </ul>
+        <p>Vos données ne sont utilisées à aucune autre fin.</p>
+    </section>
+
+    <section id="conservation" aria-labelledby="conservation-title">
+        <h2 id="conservation-title">3. Durée de conservation</h2>
+        <ul>
+            <li><strong>Compte, espaces et notes</strong>&nbsp;: tant que votre compte existe. Une note ou un espace que vous supprimez est effacé immédiatement&nbsp;; la suppression de votre compte efface tout.</li>
+            <li><strong>Tentatives de connexion échouées</strong>&nbsp;: gardées uniquement en mémoire, pendant 15&nbsp;minutes, puis oubliées.</li>
+            <li><strong>Journaux techniques</strong>&nbsp;: 6&nbsp;mois au maximum, durée recommandée par la CNIL pour ce type de données.</li>
+        </ul>
+    </section>
+
+    <section id="destinataires" aria-labelledby="destinataires-title">
+        <h2 id="destinataires-title">4. Qui y a accès&nbsp;?</h2>
+        <p>Vos espaces et vos notes ne sont accessibles qu'à vous&nbsp;: le serveur vérifie à chaque demande qu'ils vous appartiennent. Aucune donnée n'est transmise, vendue ou louée à un tiers. Seules les personnes chargées de faire fonctionner le serveur peuvent, pour des raisons techniques, accéder à la base de données et aux journaux.</p>
+    </section>
+
+    <section id="cookies" aria-labelledby="cookies-title">
+        <h2 id="cookies-title">5. Cookies</h2>
+        <p>GDT n'utilise que des cookies strictement nécessaires à son fonctionnement. Ils sont illisibles par les scripts de la page et ne sont jamais envoyés à un autre site. Comme le prévoit la réglementation, ils ne nécessitent pas votre consentement&nbsp;: c'est pourquoi aucun bandeau ne vous le demande.</p>
+        <div class="table-wrapper" tabindex="0" role="region" aria-label="Tableau des cookies">
+            <table>
+                <caption class="visually-hidden">Cookies utilisés par GDT</caption>
+                <thead>
+                    <tr><th scope="col">Cookie</th><th scope="col">Rôle</th><th scope="col">Durée</th></tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row"><code>gdt_session</code></th><td>Vous garder connecté (contient votre jeton de connexion).</td><td>Durée de la session (1&nbsp;heure par défaut), supprimé à la déconnexion.</td></tr>
+                    <tr><th scope="row"><code>gdt_csrf</code></th><td>Protéger vos formulaires contre les envois frauduleux depuis un autre site.</td><td>24&nbsp;heures.</td></tr>
+                    <tr><th scope="row"><code>gdt_flash</code></th><td>Afficher une seule fois un message de confirmation (par exemple «&nbsp;La note a été enregistrée&nbsp;»).</td><td>1&nbsp;minute au plus, supprimé dès l'affichage.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>En HTTPS, ces noms sont précédés de <code>__Host-</code>, ce qui empêche un autre site de les modifier.</p>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-title">
+        <h2 id="securite-title">6. Sécurité</h2>
+        <ul>
+            <li>Mots de passe conservés sous forme d'empreinte bcrypt, jamais en clair ni dans les exports.</li>
+            <li>Échanges chiffrés en HTTPS lorsque l'application est déployée avec un certificat.</li>
+            <li>Chaque demande est vérifiée par le serveur&nbsp;: personne d'autre que vous ne peut lire ou modifier vos espaces et vos notes.</li>
+            <li>Protection contre les attaques courantes du web (injection de scripts, envois de formulaires depuis un autre site, tentatives de connexion répétées).</li>
+        </ul>
+    </section>
+
+    <section id="droits" aria-labelledby="droits-title">
+        <h2 id="droits-title">7. Vos droits</h2>
+        <p>Vous disposez des droits suivants sur vos données&nbsp;:</p>
+        <ul>
+            <li><strong>Droit d'accès et à la portabilité</strong>&nbsp;: téléchargez toutes vos données (profil, espaces, notes) dans un fichier JSON depuis <a href="/account">Mon compte</a>.</li>
+            <li><strong>Droit de rectification</strong>&nbsp;: modifiez vos espaces et vos notes à tout moment dans l'application.</li>
+            <li><strong>Droit à l'effacement</strong>&nbsp;: supprimez votre compte et toutes vos données depuis <a href="/account">Mon compte</a>. La suppression est immédiate et définitive.</li>
+            <li><strong>Droit d'opposition et à la limitation</strong>&nbsp;: vous pouvez cesser d'utiliser le service et supprimer votre compte à tout moment.</li>
+        </ul>
+        <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a> (Commission nationale de l'informatique et des libertés).</p>
+    </section>
+
+    <p class="prose__updated">Dernière mise à jour&nbsp;: <time datetime="2026-09-28">28 septembre 2026</time>.</p>
+</article>
+{{end}}

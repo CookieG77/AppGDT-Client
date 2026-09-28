@@ -825,6 +825,46 @@ main:focus { outline: none; }
     accent-color: var(--danger);
 }
 
+/* --- Pages de texte (confidentialité) ------------------------------------- */
+.prose { max-width: 48rem; }
+.prose h2 { margin-top: var(--space-7); font-size: 1.5rem; }
+.prose section { scroll-margin-top: var(--space-4); }
+.prose ul { padding-left: var(--space-5); }
+.prose li + li { margin-top: var(--space-2); }
+.prose__lead { font-size: 1.1875rem; color: var(--ink-soft); }
+.prose__summary { margin: var(--space-5) 0; display: block; }
+.prose__summary h2 { margin-top: 0; }
+.prose__summary ul { margin: var(--space-2) 0 0; }
+.prose__updated { margin-top: var(--space-7); color: var(--ink-soft); font-size: 0.9375rem; }
+.prose code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: var(--todo-bg);
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+}
+
+.toc {
+    padding: var(--space-4);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--sheet);
+}
+.toc__title { margin: 0 0 var(--space-2) !important; font-size: 1.125rem !important; font-family: var(--font-body); font-weight: 700; }
+.toc ol { margin: 0; padding-left: var(--space-5); }
+.toc li + li { margin-top: var(--space-1); }
+.toc a { display: inline-block; padding-block: var(--space-1); }
+
+/* Tableaux : défilement horizontal sur petit écran plutôt qu'un débordement */
+.table-wrapper { overflow-x: auto; margin-bottom: var(--space-4); border-radius: 2px; }
+.prose table { width: 100%; border-collapse: collapse; background: var(--sheet); font-size: 0.9375rem; }
+.prose th, .prose td { padding: var(--space-2) var(--space-3); border: 1px solid var(--line); text-align: left; vertical-align: top; }
+.prose thead th { background: var(--todo-bg); }
+.prose tbody th { font-weight: 600; min-width: 8rem; }
+
+.auth__privacy { margin: var(--space-5) 0 0; font-size: 0.9375rem; color: var(--ink-soft); }
+
 /* Boutons de suppression */
 .button--danger { background: var(--danger); border-color: var(--danger); }
 .button--danger:hover { background: #82191d; border-color: #82191d; }
@@ -875,6 +915,17 @@ main:focus { outline: none; }
     text-align: center;
 }
 .site-footer p { margin: 0; }
+.site-footer__inner { display: grid; gap: var(--space-2); justify-items: center; }
+.site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.site-footer__links a { display: inline-flex; align-items: center; min-height: var(--tap); }
 
 /* ==========================================================================
    Écrans moyens (≥ 30rem, ~480 px)
@@ -917,7 +968,7 @@ main:focus { outline: none; }
         align-items: center;
         padding: var(--space-5) var(--space-6);
     }
-    .site-footer__inner { text-align: left; }
+    .site-footer__inner { text-align: left; grid-template-columns: 1fr auto; align-items: center; justify-items: start; }
 }
 
 @media (min-width: 64rem) {

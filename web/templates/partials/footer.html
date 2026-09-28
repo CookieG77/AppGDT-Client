@@ -2,6 +2,12 @@
 <footer class="site-footer">
     <div class="container site-footer__inner">
         <p>GDT — votre carnet de notes, organisé par espaces.</p>
+        <nav aria-label="Liens du pied de page">
+            <ul class="site-footer__links">
+                {{if .User}}<li><a href="/account"{{if eq .Path "/account"}} aria-current="page"{{end}}>Mon compte</a></li>{{end}}
+                <li><a href="/privacy"{{if eq .Path "/privacy"}} aria-current="page"{{end}}>Confidentialité</a></li>
+            </ul>
+        </nav>
     </div>
 </footer>
 {{end}}

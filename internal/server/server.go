@@ -45,6 +45,7 @@ func New(addr string, h Handlers, s Sessions, staticFS fs.FS, opts Options) *htt
 
 	// Public pages
 	pages.HandleFunc("GET /{$}", h.Page.Home)
+	pages.HandleFunc("GET /privacy", h.Page.Privacy)
 
 	// Authentication (login and register are for visitors only)
 	pages.Handle("GET /login", guestOnly(http.HandlerFunc(h.Auth.LoginForm)))

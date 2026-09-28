@@ -797,3 +797,23 @@ func TestAccountDeletion(t *testing.T) {
 	resp, _ = c.get("/account")
 	expectStatus(t, resp, http.StatusSeeOther)
 }
+
+// --- Privacy page ----------------------------------------------------------------------
+
+func TestPrivacyPage(t *testing.T) {
+	c := newTestClient(t)
+
+	// Public, and linked from every page and from the registration form
+	resp, body := c.get("/privacy")
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "<h1 id=\"privacy-title\">Confidentialité</h1>", "gdt_session", "gdt_csrf", "gdt_flash", "https://www.cnil.fr/fr/plaintes")
+	_, body = c.get("/")
+	expectContains(t, body, `href="/privacy"`)
+	_, body = c.get("/register")
+	expectContains(t, body, `href="/privacy"`)
+
+	// Logged in: the footer also links to the account page
+	c.login()
+	_, body = c.get("/privacy")
+	expectContains(t, body, `<a href="/privacy" aria-current="page">`, `href="/account"`)
+}

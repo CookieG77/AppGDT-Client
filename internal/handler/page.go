@@ -21,6 +21,16 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 	h.renderer.Render(w, r, http.StatusOK, "home", view.Page{})
 }
 
+// Privacy explains which personal data is kept and how to exercise the
+// GDPR rights. It is public: visitors must be able to read it before
+// creating an account.
+func (h *PageHandler) Privacy(w http.ResponseWriter, r *http.Request) {
+	h.renderer.Render(w, r, http.StatusOK, "privacy", view.Page{
+		Title:       "Confidentialité",
+		Description: "Données conservées par GDT, durée de conservation, cookies et droits RGPD.",
+	})
+}
+
 // NotFound renders the 404 page for any URL matching no route.
 func (h *PageHandler) NotFound(w http.ResponseWriter, r *http.Request) {
 	h.renderer.RenderError(w, r, http.StatusNotFound, "La page demandée n'existe pas.")
