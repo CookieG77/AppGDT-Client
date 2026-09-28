@@ -102,6 +102,7 @@ Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **
 |---|---|
 | `/` | Accueil |
 | `/login`, `/register` | Connexion, inscription (visiteurs uniquement) |
+| `/privacy` | Confidentialité : données conservées, cookies, droits RGPD |
 | `/spaces` | Mes espaces |
 | `/spaces/new` | Nouvel espace |
 | `/spaces/{id}` | Un espace et ses notes |
@@ -122,6 +123,8 @@ La page **Mon compte** (lien sur le pseudo, dans l'en-tête) donne accès aux de
 
 - **Portabilité / accès** : téléchargement d'un fichier JSON contenant le profil, les espaces et toutes les notes (`GET /users/me/export`). Le mot de passe n'est jamais exporté.
 - **Effacement** : suppression définitive du compte et de toutes ses données (`DELETE /users/me`). Le mot de passe est redemandé et une case de confirmation doit être cochée ; ensuite la session est fermée.
+
+La page publique **Confidentialité** (`/privacy`, liée dans le pied de page et sous le formulaire d'inscription) détaille les données conservées, leurs finalités et bases légales, leurs durées de conservation, les cookies (tous strictement nécessaires, donc sans bandeau de consentement) et la façon d'exercer ses droits. En cas de déploiement réel, elle doit être complétée avec l'identité et le contact du responsable du traitement.
 
 ## Markdown dans les notes
 
