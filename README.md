@@ -8,7 +8,7 @@ Développé en Go, il génère les pages HTML avec le moteur `html/template` et 
 Navigateur ──HTML / formulaires──▶ Client Go ──JSON + JWT──▶ API (AppGDT-Server) ──▶ PostgreSQL
 ```
 
-> 🚧 Projet en cours de développement.
+Toutes les fonctionnalités du sujet sont en place (authentification, espaces, notes), ainsi que le rendu Markdown des notes, l'export et la suppression des données (RGPD), une page de confidentialité et un mode HTTPS. Les pages sont conçues mobile first et accessibles (repères ARIA, navigation au clavier, contrastes AA).
 
 ## Stack technique
 
@@ -23,6 +23,7 @@ Navigateur ──HTML / formulaires──▶ Client Go ──JSON + JWT──▶
 
 - Go 1.27 ou plus récent
 - Le serveur [AppGDT-Server](https://github.com/CookieG77/AppGDT-Server) lancé et accessible
+- `make` (facultatif, voir [Commandes `make`](#commandes-make))
 
 ## Configuration
 
@@ -40,25 +41,33 @@ Copier `.env.example` en `.env` puis adapter les valeurs. Les variables déjà d
 
 ## Lancement
 
+1. Démarrer l'API (voir le README d'[AppGDT-Server](https://github.com/CookieG77/AppGDT-Server)) : `make db-up`, `make seed`, puis `make run` dans le dépôt du serveur.
+2. Copier `.env.example` en `.env` (les valeurs par défaut conviennent en local).
+3. Lancer le client :
+
 ```bash
-go run ./cmd/client
+make run          # ou : go run ./cmd/client
 ```
 
 Le client est ensuite accessible sur <http://localhost:3000>.
 
+### Commandes `make`
+
+Les commandes courantes sont regroupées dans un `Makefile` (`make help` pour la liste). Sous Windows, installer `make` une fois : `winget install ezwinports.make` (ou `choco install make`, ou `scoop install make`), puis rouvrir le terminal. Chaque cible reste une simple commande `go` ou `docker`, utilisable directement sans `make`.
+
+| Cible | Commande équivalente | Rôle |
+|---|---|---|
+| `make run` | `go run ./cmd/client` | Lancer le client |
+| `make build` | `go build -o bin/gdt-client ./cmd/client` | Compiler dans `bin/` (`.exe` sous Windows) |
+| `make test` | `go test ./...` | Lancer les tests |
+| `make vet`, `make fmt` | `go vet ./...`, `go fmt ./...` | Analyse statique, formatage |
+| `make clean` | | Supprimer `bin/` |
+
 **Comptes de démonstration** : depuis le dépôt [AppGDT-Server](https://github.com/CookieG77/AppGDT-Server), `go run ./cmd/seed` crée `demo@example.com` et `camille@example.com` (mot de passe `Demo1234!`), avec des espaces et des notes d'exemple.
 
-Pour lancer les tests :
+### Tests
 
-```bash
-go test ./...
-```
-
-Pour produire un exécutable :
-
-```bash
-go build -o gdt-client ./cmd/client
-```
+`make test` lance les tests Go : client HTTP de l'API (faux serveur `httptest`) et parcours complets des pages (connexion, CSRF, espaces, notes, compte, confidentialité) contre une fausse API en mémoire. Ils ne nécessitent ni le serveur ni la base de données.
 
 ## HTTPS (optionnel)
 
@@ -142,6 +151,7 @@ Le contenu des notes peut être mis en forme en Markdown. **L'API n'est pas conc
 
 ```
 cmd/client/          Point d'entrée : configuration, templates, routes, arrêt propre
+Makefile             Commandes courantes (make help)
 internal/
   apiclient/         Client HTTP typé vers l'API (modèles, appels, erreurs de l'API)
   config/            Chargement de la configuration (.env + variables d'environnement)
