@@ -11,15 +11,27 @@ import (
 	"net/http"
 	"path"
 	"strings"
+
+	"github.com/CookieG77/AppGDT-Client/internal/session"
 )
 
 // Page is the data given to every template.
 // Title is shown in the <title> tag, Description in the meta description
 // (a default one is used when empty) and Data holds the page-specific content.
+// The other fields are filled by Render from the request.
 type Page struct {
 	Title       string
 	Description string
 	Data        any
+
+	// User is the authenticated user, nil for a visitor
+	User *session.Current
+	// Flash is the one-time message to show, if any
+	Flash *session.Flash
+	// CSRFToken must be put in every form (see the "csrf" template)
+	CSRFToken string
+	// Path is the current URL path, used to mark the active link
+	Path string
 }
 
 // ErrorData is the content of the error page.
@@ -71,13 +83,19 @@ func NewRenderer(fsys fs.FS) (*Renderer, error) {
 // Render writes the given page with the given status code.
 // The page is first rendered in a buffer: if a template fails, a clean 500
 // page is sent instead of a half-written one.
-func (r *Renderer) Render(w http.ResponseWriter, status int, page string, data Page) {
+func (r *Renderer) Render(w http.ResponseWriter, req *http.Request, status int, page string, data Page) {
 	tmpl, ok := r.pages[page]
 	if !ok {
 		slog.Error("unknown page", "page", page)
 		writeFallbackError(w)
 		return
 	}
+
+	ctx := req.Context()
+	data.User = session.CurrentFrom(ctx)
+	data.Flash = session.FlashFrom(ctx)
+	data.CSRFToken = session.CSRFTokenFrom(ctx)
+	data.Path = req.URL.Path
 
 	var buf bytes.Buffer
 	if err := tmpl.ExecuteTemplate(&buf, "base", data); err != nil {
@@ -94,8 +112,8 @@ func (r *Renderer) Render(w http.ResponseWriter, status int, page string, data P
 }
 
 // RenderError renders the error page with the given status and message.
-func (r *Renderer) RenderError(w http.ResponseWriter, status int, message string) {
-	r.Render(w, status, "error", Page{
+func (r *Renderer) RenderError(w http.ResponseWriter, req *http.Request, status int, message string) {
+	r.Render(w, req, status, "error", Page{
 		Title: errorTitle(status),
 		Data:  ErrorData{Status: status, Message: message},
 	})
@@ -112,6 +130,8 @@ func errorTitle(status int) string {
 		return "Accès refusé"
 	case http.StatusNotFound:
 		return "Page introuvable"
+	case http.StatusRequestEntityTooLarge:
+		return "Envoi trop volumineux"
 	case http.StatusTooManyRequests:
 		return "Trop de requêtes"
 	case http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
@@ -128,5 +148,24 @@ func writeFallbackError(w http.ResponseWriter) {
 
 // funcs returns the helpers available in every template.
 func funcs() template.FuncMap {
-	return template.FuncMap{}
+	return template.FuncMap{
+		"dict": dict,
+	}
+}
+
+// dict builds a map from key/value pairs, to give several named values to
+// a partial template: {{template "field" dict "Name" "email" "Label" "Email"}}
+func dict(pairs ...any) (map[string]any, error) {
+	if len(pairs)%2 != 0 {
+		return nil, fmt.Errorf("dict expects key/value pairs, got %d values", len(pairs))
+	}
+	m := make(map[string]any, len(pairs)/2)
+	for i := 0; i < len(pairs); i += 2 {
+		key, ok := pairs[i].(string)
+		if !ok {
+			return nil, fmt.Errorf("dict key %v is not a string", pairs[i])
+		}
+		m[key] = pairs[i+1]
+	}
+	return m, nil
 }

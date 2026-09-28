@@ -1,14 +1,25 @@
 {{define "header"}}
 <header class="site-header">
     <div class="container site-header__inner">
-        <a class="brand" href="/" aria-label="GDT, retour à l'accueil">
+        <a class="brand" href="{{if .User}}/spaces{{else}}/{{end}}" aria-label="GDT, retour à l'accueil">
             {{template "logo"}}
             <span class="brand__name" aria-hidden="true">GDT</span>
         </a>
         <nav class="site-nav" aria-label="Navigation principale">
             <ul>
-                <li><a href="/login">Se connecter</a></li>
-                <li class="site-nav__register"><a class="button button--small" href="/register">Créer un compte</a></li>
+            {{if .User}}
+                <li><a href="/spaces"{{if eq .Path "/spaces"}} aria-current="page"{{end}}>Mes espaces</a></li>
+                <li class="site-nav__user"><span class="visually-hidden">Connecté en tant que </span>{{.User.User.Username}}</li>
+                <li>
+                    <form class="inline-form" method="post" action="/logout">
+                        {{template "csrf" .}}
+                        <button class="nav-button" type="submit">Déconnexion</button>
+                    </form>
+                </li>
+            {{else}}
+                <li><a href="/login"{{if eq .Path "/login"}} aria-current="page"{{end}}>Se connecter</a></li>
+                <li class="site-nav__register"><a class="button button--small" href="/register"{{if eq .Path "/register"}} aria-current="page"{{end}}>Créer un compte</a></li>
+            {{end}}
             </ul>
         </nav>
     </div>

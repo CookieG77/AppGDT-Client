@@ -228,6 +228,21 @@ main:focus { outline: none; }
     text-decoration: none;
 }
 .site-nav a:not(.button):hover { text-decoration: underline; }
+
+/* Bouton de formulaire (déconnexion) présenté comme un lien de navigation */
+.nav-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding: 0 var(--space-2);
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.nav-button:hover { color: var(--accent-strong); text-decoration: underline; }
 .site-nav a[aria-current="page"] {
     text-decoration: underline;
     text-decoration-thickness: 2px;
@@ -418,6 +433,133 @@ main:focus { outline: none; }
 .callout h2 { font-size: 1.375rem; margin: 0 0 var(--space-1); }
 .callout p { margin: 0; }
 
+/* --- Formulaires ------------------------------------------------------------ */
+.form {
+    display: grid;
+    gap: var(--space-5);
+}
+.field {
+    display: grid;
+    gap: var(--space-1);
+}
+.field__label {
+    font-weight: 600;
+}
+.field__optional {
+    font-weight: 400;
+    color: var(--ink-soft);
+}
+.field__hint {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+}
+.field__error {
+    margin: 0;
+    font-weight: 600;
+    color: var(--danger);
+}
+.field__input {
+    width: 100%;
+    min-height: var(--tap);
+    padding: var(--space-2) var(--space-3);
+    border: 2px solid var(--ink-soft);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--ink);
+    /* 16 px minimum : évite le zoom automatique de Safari sur iPhone */
+    font: inherit;
+    font-size: max(1rem, 16px);
+}
+.field__input:focus-visible {
+    border-color: var(--focus);
+    outline-offset: 1px;
+}
+/* Erreur : bordure rouge ET épaisse, pour ne pas reposer sur la couleur seule */
+.field--invalid .field__input {
+    border-color: var(--danger);
+    border-width: 3px;
+}
+.field--invalid {
+    padding-left: var(--space-3);
+    border-left: 4px solid var(--danger);
+}
+
+.form__submit { width: 100%; }
+
+/* Résumé des erreurs en haut d'un formulaire */
+.error-summary {
+    margin-bottom: var(--space-5);
+    padding: var(--space-4);
+    border: 3px solid var(--danger);
+    border-radius: var(--radius);
+    background: var(--danger-tint);
+}
+.error-summary__title {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+}
+.error-summary__list {
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-5);
+}
+.error-summary__list a {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* Formulaire réduit à un bouton (déconnexion) */
+.inline-form { margin: 0; }
+
+/* --- Messages flash ----------------------------------------------------------- */
+.flash {
+    margin-bottom: var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--accent-tint);
+}
+.flash p { margin: 0; font-weight: 600; }
+.flash--success {
+    border-color: var(--success);
+    background: var(--success-tint);
+}
+
+/* --- Pages connexion / inscription ---------------------------------------- */
+.auth {
+    max-width: 28rem;
+    margin-inline: auto;
+}
+.auth__eyebrow { margin-bottom: var(--space-1); }
+.auth__intro { color: var(--ink-soft); }
+.auth__switch {
+    margin: var(--space-5) 0 0;
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--line);
+    text-align: center;
+}
+
+/* --- Liste des espaces ------------------------------------------------------ */
+.space-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+}
+.space-card__title { font-size: 1.25rem; margin-bottom: var(--space-2); }
+.space-card__description { margin: 0; color: var(--ink-soft); }
+.empty-state { margin-top: var(--space-5); }
+.empty-state p { margin: 0; }
+
+.site-nav__user {
+    display: none;
+    color: var(--ink-soft);
+    font-weight: 600;
+}
+
 /* --- Page d'erreur -------------------------------------------------------- */
 .error-page {
     max-width: 36rem;
@@ -452,6 +594,8 @@ main:focus { outline: none; }
 @media (min-width: 30rem) {
     .container { padding-inline: var(--space-5); }
     .site-nav__register { display: list-item; }
+    .auth__card { padding: var(--space-6); }
+    .form__submit { width: auto; justify-self: start; }
     .button-group { flex-direction: row; flex-wrap: wrap; }
     .sheet { padding: var(--space-6) var(--space-5); }
     .sheet--ruled { padding-left: calc(var(--space-7) + var(--space-2)); }
@@ -469,6 +613,8 @@ main:focus { outline: none; }
     .site-main { padding-block: var(--space-7) var(--space-8); }
     .hero { grid-template-columns: 1.1fr 1fr; gap: var(--space-7); }
     .steps { grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+    .space-list { grid-template-columns: repeat(2, 1fr); }
+    .site-nav__user { display: list-item; padding-inline: var(--space-2); }
     .callout {
         grid-template-columns: 1fr auto;
         align-items: center;
@@ -488,5 +634,5 @@ main:focus { outline: none; }
 
 /* Mode contraste élevé de Windows : les bordures restent visibles */
 @media (forced-colors: active) {
-    .badge, .button, .sheet { border: 1px solid CanvasText; }
+    .badge, .button, .sheet, .flash { border: 1px solid CanvasText; }
 }

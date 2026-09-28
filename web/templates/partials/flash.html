@@ -1,0 +1,8 @@
+{{/* Message affiché une seule fois après une action (connexion, déconnexion…) */}}
+{{define "flash"}}
+{{with .Flash}}
+<div class="flash flash--{{.Kind}}" role="status">
+    <p>{{.Message}}</p>
+</div>
+{{end}}
+{{end}}
