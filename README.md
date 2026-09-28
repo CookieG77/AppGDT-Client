@@ -96,6 +96,23 @@ Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **
 - **CSRF** : chaque formulaire contient un jeton aléatoire, comparé à celui du cookie `gdt_csrf`. Les envois marqués par le navigateur comme venant d'un autre site (`Sec-Fetch-Site`) sont refusés.
 - **Déconnexion** : le cookie est supprimé. Le JWT reste techniquement valide jusqu'à son expiration, l'API ne permettant pas de le révoquer.
 
+## Pages
+
+| Adresse | Page |
+|---|---|
+| `/` | Accueil |
+| `/login`, `/register` | Connexion, inscription (visiteurs uniquement) |
+| `/spaces` | Mes espaces |
+| `/spaces/new` | Nouvel espace |
+| `/spaces/{id}` | Un espace et ses notes |
+| `/spaces/{id}/edit`, `/spaces/{id}/delete` | Modification, suppression (avec confirmation) |
+| `/spaces/{id}/notes/new` | Nouvelle note dans l'espace |
+| `/notes/{id}` | Une note, en mode consultation |
+| `/notes/{id}/edit` | Une note, en mode édition |
+| `/notes/{id}/delete` | Suppression d'une note (avec confirmation) |
+
+Les formulaires HTML ne connaissant que `GET` et `POST`, les modifications sont envoyées en `POST` au client, qui appelle l'API en `PUT` ou `DELETE`. Toutes les pages fonctionnent sans JavaScript.
+
 ## Structure du projet
 
 ```
