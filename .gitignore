@@ -30,3 +30,8 @@ go.work.sum
 # Editor/IDE
 .idea/
 .vscode/
+
+# TLS certificates and private keys (never commit a private key)
+certs/
+*.pem
+*.key
