@@ -829,3 +829,36 @@ func TestPrivacyPage(t *testing.T) {
 	_, body = c.get("/privacy")
 	expectContains(t, body, `<a href="/privacy" aria-current="page">`, `href="/account"`)
 }
+
+// --- Task lists -------------------------------------------------------------------------
+
+func TestToggleTask(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	spacePath := c.createSpace("Tâches")
+	token := c.csrfToken(spacePath + "/notes/new")
+	resp, _ := c.post(spacePath+"/notes", url.Values{
+		"csrf_token": {token}, "title": {"Courses"}, "status": {"todo"},
+		"content": {"- [ ] pain\n- [x] lait"},
+	})
+	notePath := resp.Header.Get("Location")
+
+	_, body := c.get(notePath)
+	expectContains(t, body, `data-tasks-url="`+notePath+`/tasks"`, `data-csrf="`+token+`"`)
+
+	// Tick the first task, untick the second one
+	resp, _ = c.post(notePath+"/tasks", url.Values{"csrf_token": {token}, "index": {"0"}, "done": {"true"}})
+	expectStatus(t, resp, http.StatusNoContent)
+	resp, _ = c.post(notePath+"/tasks", url.Values{"csrf_token": {token}, "index": {"1"}, "done": {"false"}})
+	expectStatus(t, resp, http.StatusNoContent)
+	_, body = c.get(notePath + "/edit")
+	expectContains(t, body, "- [x] pain\n- [ ] lait</textarea>")
+
+	// Unknown task, invalid index, missing CSRF token
+	resp, _ = c.post(notePath+"/tasks", url.Values{"csrf_token": {token}, "index": {"5"}, "done": {"true"}})
+	expectStatus(t, resp, http.StatusBadRequest)
+	resp, _ = c.post(notePath+"/tasks", url.Values{"csrf_token": {token}, "index": {"-1"}, "done": {"true"}})
+	expectStatus(t, resp, http.StatusBadRequest)
+	resp, _ = c.post(notePath+"/tasks", url.Values{"index": {"0"}, "done": {"true"}})
+	expectStatus(t, resp, http.StatusForbidden)
+}

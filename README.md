@@ -129,12 +129,13 @@ Les certificats de l'API sont toujours vérifiés : les autorités du système s
 | `/privacy` | Confidentialité : données conservées, cookies, droits RGPD |
 | `/spaces` | Mes espaces |
 | `/spaces/new` | Nouvel espace |
-| `/spaces/{id}` | Un espace et ses notes |
+| `/spaces/{id}` | Un espace et ses notes, filtrables par état (`?status=todo`, `in_progress` ou `done`) |
 | `/spaces/{id}/edit`, `/spaces/{id}/delete` | Modification, suppression (avec confirmation) |
 | `/spaces/{id}/notes/new` | Nouvelle note dans l'espace |
 | `/notes/{id}` | Une note, en mode consultation |
 | `/notes/{id}/edit` | Une note, en mode édition |
 | `/notes/{id}/delete` | Suppression d'une note (avec confirmation) |
+| `/notes/{id}/tasks` | Enregistrement d'une case cochée dans une note (appelé par JavaScript) |
 | `/account` | Mon compte : informations, export et suppression des données |
 | `/account/export` | Téléchargement de toutes les données du compte (JSON) |
 | `/account/delete` | Suppression du compte (mot de passe + confirmation) |
@@ -154,7 +155,8 @@ La page publique **Confidentialité** (`/privacy`, liée dans le pied de page et
 
 Le contenu des notes peut être mis en forme en Markdown. **L'API n'est pas concernée** : le texte est enregistré tel quel, et c'est le navigateur qui l'interprète à l'affichage (`web/static/js/markdown.js`).
 
-- **Consultation** : le texte brut est remplacé par son rendu HTML. Les titres sont décalés pour commencer au niveau `<h2>` (le titre de la note est le `<h1>`), et les cases des listes de tâches reçoivent un nom accessible.
+- **Consultation** : le texte brut est remplacé par son rendu HTML. Les titres sont décalés pour commencer au niveau `<h2>` (le titre de la note est le `<h1>`).
+- **Listes de tâches** : les lignes `- [ ]` / `- [x]` deviennent des cases à cocher cliquables (nommées par le texte de la tâche). Chaque changement est enregistré aussitôt : le client modifie la ligne correspondante du texte Markdown puis enregistre la note via l'API (`POST /notes/{id}/tasks`, protégé par le jeton CSRF). Les lignes placées dans un bloc de code sont ignorées, comme à l'affichage. En cas d'échec, la case reprend son état et un message est annoncé.
 - **Édition** : onglets « Écrire » / « Aperçu » (motif d'onglets ARIA, navigation aux flèches) et aide repliable listant la syntaxe.
 - **Listes** : les extraits de notes sont affichés sans la syntaxe (`**`, `##`…).
 - **Sécurité** : [marked](https://github.com/markedjs/marked) ne filtre pas le HTML, donc tout le rendu passe par [DOMPurify](https://github.com/cure53/DOMPurify) (suppression des `<script>`, attributs `on…`, liens `javascript:`…). Les images externes sont remplacées par un lien (elles seraient bloquées par la CSP et pourraient servir à suivre la lecture). Les deux bibliothèques sont servies par le client (`web/static/vendor/`, licences jointes) : aucune ressource externe n'est chargée.

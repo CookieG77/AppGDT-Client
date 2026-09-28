@@ -18,7 +18,8 @@
 
     <div class="sheet sheet--ruled note__sheet">
         {{with $note.Content}}
-        <div class="note__content" id="note-content" data-markdown data-first-heading="2">{{.}}</div>
+        <div class="note__content" id="note-content" data-markdown data-first-heading="2" data-tasks-url="/notes/{{$note.ID}}/tasks" data-csrf="{{$.CSRFToken}}">{{.}}</div>
+        <p class="note__tasks-status" id="note-tasks-status" role="status"></p>
         {{else}}
         <p class="note__empty">Cette note n'a pas encore de contenu. <a href="/notes/{{$note.ID}}/edit">Ajouter du contenu</a></p>
         {{end}}

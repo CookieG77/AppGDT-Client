@@ -79,6 +79,8 @@ func New(addr string, h Handlers, s Sessions, staticFS fs.FS, opts Options) *htt
 	protected("POST /notes/{noteId}", h.Note.Update)
 	protected("GET /notes/{noteId}/delete", h.Note.ConfirmDelete)
 	protected("POST /notes/{noteId}/delete", h.Note.Delete)
+	// Checkboxes of a task list, ticked from the reading mode (JavaScript)
+	protected("POST /notes/{noteId}/tasks", h.Note.ToggleTask)
 
 	// Account: personal data export and account deletion (GDPR rights)
 	protected("GET /account", h.Account.Show)

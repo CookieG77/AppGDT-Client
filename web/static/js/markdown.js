@@ -129,7 +129,62 @@
             el.textContent = "";
             el.appendChild(fragment);
             el.classList.add("markdown");
+            if (el.hasAttribute("data-tasks-url")) {
+                enableTasks(el);
+            }
         });
+    }
+
+    /*
+     * Listes de tâches cliquables : chaque case cochée ou décochée est
+     * enregistrée aussitôt (POST /notes/{id}/tasks, avec le jeton CSRF).
+     * Le serveur modifie la ligne correspondante du texte Markdown.
+     * En cas d'échec, la case reprend son état et un message est annoncé.
+     */
+    function enableTasks(el) {
+        var url = el.getAttribute("data-tasks-url");
+        var csrf = el.getAttribute("data-csrf");
+        var status = document.getElementById("note-tasks-status");
+
+        el.querySelectorAll('input[type="checkbox"]').forEach(function (box, index) {
+            var item = box.closest("li");
+            var label = item ? item.textContent.replace(/\s+/g, " ").trim() : "";
+            box.disabled = false;
+            box.setAttribute("aria-label", label || "Tâche");
+            if (item) {
+                item.classList.add("task");
+            }
+
+            box.addEventListener("change", function () {
+                var done = box.checked;
+                box.disabled = true;
+                announce(status, "");
+                fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ csrf_token: csrf, index: String(index), done: String(done) }),
+                    credentials: "same-origin"
+                }).then(function (response) {
+                    if (!response.ok) {
+                        throw response.status;
+                    }
+                    announce(status, (done ? "Tâche cochée : " : "Tâche décochée : ") + label);
+                }).catch(function (code) {
+                    box.checked = !done;
+                    announce(status, code === 401
+                        ? "Votre session a expiré : rechargez la page pour vous reconnecter."
+                        : "La tâche n'a pas pu être enregistrée. Rechargez la page et réessayez.");
+                }).finally(function () {
+                    box.disabled = false;
+                });
+            });
+        });
+    }
+
+    function announce(region, message) {
+        if (region) {
+            region.textContent = message;
+        }
     }
 
     /* Extraits dans les listes : on n'en garde que le texte, sans la syntaxe (**, ##, …). */

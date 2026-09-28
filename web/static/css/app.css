@@ -747,6 +747,9 @@ main:focus { outline: none; }
 .markdown li + li { margin-top: var(--space-1); }
 .markdown li:has(> input[type="checkbox"]) { list-style: none; margin-left: calc(-1 * var(--space-4)); }
 .markdown input[type="checkbox"] { margin: 0 var(--space-2) 0 0; accent-color: var(--success); }
+/* Cases cliquables en consultation : plus grandes, avec une zone de clic confortable */
+.markdown li.task > input[type="checkbox"] { width: 1.25rem; height: 1.25rem; vertical-align: -0.2rem; cursor: pointer; }
+.note__tasks-status { margin: 0; font-size: 0.9375rem; color: var(--ink-soft); }
 .markdown blockquote {
     padding: var(--space-2) var(--space-4);
     border-left: 4px solid var(--margin);
