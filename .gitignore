@@ -35,3 +35,6 @@ go.work.sum
 certs/
 *.pem
 *.key
+
+# Binaries built by make build
+bin/
