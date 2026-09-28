@@ -66,6 +66,7 @@ func run(logger *slog.Logger) error {
 		Page:  handler.NewPageHandler(renderer),
 		Auth:  handler.NewAuthHandler(api, renderer, sessions),
 		Space: handler.NewSpaceHandler(api, renderer, sessions),
+		Note:  handler.NewNoteHandler(api, renderer, sessions),
 	}
 
 	// HTTPS between the browser and the client, if a certificate is configured

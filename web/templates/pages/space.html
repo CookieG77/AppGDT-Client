@@ -10,4 +10,34 @@
         <li><a class="button button--danger-outline button--small" href="/spaces/{{$space.ID}}/delete">Supprimer<span class="visually-hidden"> l'espace</span></a></li>
     </ul>
 </div>
+
+<section class="section" aria-labelledby="notes-title">
+    <div class="section-header">
+        <h2 id="notes-title">Notes</h2>
+        <a class="button" href="/spaces/{{$space.ID}}/notes/new">Nouvelle note</a>
+    </div>
+
+    {{with .Data.Notes}}
+    <ul class="status-summary" aria-label="Répartition des notes par état">
+        {{range $.Data.Counts}}
+        <li><span class="badge badge--{{.Status}}">{{.Status.Label}}&nbsp;: {{.Count}}</span></li>
+        {{end}}
+    </ul>
+    <ul class="card-list" aria-labelledby="notes-title">
+        {{range .}}
+        <li class="sheet card note-card">
+            <h3 class="card__title"><a class="card__link" href="/notes/{{.ID}}">{{.Title}}</a></h3>
+            <p><span class="badge badge--{{.Status}}"><span class="visually-hidden">État&nbsp;: </span>{{.Status.Label}}</span></p>
+            {{with .Content}}<p class="card__text">{{excerpt . 160}}</p>{{end}}
+            <p class="card__meta">Modifiée le <time datetime="{{isodate .UpdatedAt}}">{{date .UpdatedAt}}</time></p>
+        </li>
+        {{end}}
+    </ul>
+    {{else}}
+    <div class="sheet sheet--ruled empty-state">
+        <p>Cet espace ne contient pas encore de note.</p>
+        <a class="button button--secondary" href="/spaces/{{$space.ID}}/notes/new">Ajouter une première note</a>
+    </div>
+    {{end}}
+</section>
 {{end}}

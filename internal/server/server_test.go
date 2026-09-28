@@ -39,10 +39,11 @@ type fakeAPI struct {
 	mu     sync.Mutex
 	nextID int64
 	spaces map[int64]*apiclient.Space
+	notes  map[int64]*apiclient.Note
 }
 
 func newFakeAPI() *fakeAPI {
-	return &fakeAPI{nextID: 1, spaces: map[int64]*apiclient.Space{}}
+	return &fakeAPI{nextID: 1, spaces: map[int64]*apiclient.Space{}, notes: map[int64]*apiclient.Note{}}
 }
 
 func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -134,6 +135,55 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 	mux.HandleFunc("DELETE /spaces/{id}", withSpace(func(sp *apiclient.Space) {
 		delete(f.spaces, sp.ID)
+		for id, n := range f.notes {
+			if n.SpaceID == sp.ID {
+				delete(f.notes, id)
+			}
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	mux.HandleFunc("GET /spaces/{id}/notes", withSpace(func(sp *apiclient.Space) {
+		list := []apiclient.Note{}
+		for _, n := range f.notes {
+			if n.SpaceID == sp.ID {
+				list = append(list, *n)
+			}
+		}
+		writeJSON(http.StatusOK, list)
+	}))
+	mux.HandleFunc("POST /spaces/{id}/notes", func(w http.ResponseWriter, r *http.Request) {
+		withSpace(func(sp *apiclient.Space) {
+			var in apiclient.NoteInput
+			_ = json.NewDecoder(r.Body).Decode(&in)
+			now := time.Now()
+			n := &apiclient.Note{ID: f.nextID, SpaceID: sp.ID, Title: in.Title, Content: in.Content, Status: in.Status, CreatedAt: now, UpdatedAt: now}
+			f.notes[n.ID] = n
+			f.nextID++
+			writeJSON(http.StatusCreated, n)
+		})(w, r)
+	})
+	withNote := func(handle func(n *apiclient.Note)) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+			n, ok := f.notes[id]
+			if !ok {
+				notFound()
+				return
+			}
+			handle(n)
+		}
+	}
+	mux.HandleFunc("GET /notes/{id}", withNote(func(n *apiclient.Note) { writeJSON(http.StatusOK, n) }))
+	mux.HandleFunc("PUT /notes/{id}", func(w http.ResponseWriter, r *http.Request) {
+		withNote(func(n *apiclient.Note) {
+			var in apiclient.NoteInput
+			_ = json.NewDecoder(r.Body).Decode(&in)
+			n.Title, n.Content, n.Status, n.UpdatedAt = in.Title, in.Content, in.Status, time.Now()
+			writeJSON(http.StatusOK, n)
+		})(w, r)
+	})
+	mux.HandleFunc("DELETE /notes/{id}", withNote(func(n *apiclient.Note) {
+		delete(f.notes, n.ID)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -170,6 +220,7 @@ func newTestClient(t *testing.T) *testClient {
 		Page:  handler.NewPageHandler(renderer),
 		Auth:  handler.NewAuthHandler(apiClient, renderer, sessions),
 		Space: handler.NewSpaceHandler(apiClient, renderer, sessions),
+		Note:  handler.NewNoteHandler(apiClient, renderer, sessions),
 	}, Sessions{Manager: sessions, API: apiClient}, staticFS, Options{})
 
 	clientSrv := httptest.NewServer(srv.Handler)
@@ -538,6 +589,101 @@ func TestSpacePagesRequireLogin(t *testing.T) {
 		resp, _ := c.get(path)
 		if resp.StatusCode != http.StatusSeeOther || !strings.HasPrefix(resp.Header.Get("Location"), "/login?next=") {
 			t.Errorf("GET %s: expected a redirection to the login page, got %d %s", path, resp.StatusCode, resp.Header.Get("Location"))
+		}
+	}
+}
+
+// --- Notes -----------------------------------------------------------------------
+
+// createSpace creates a space through the pages and returns its URL.
+func (c *testClient) createSpace(name string) string {
+	c.t.Helper()
+	token := c.csrfToken("/spaces/new")
+	resp, _ := c.post("/spaces", url.Values{"csrf_token": {token}, "name": {name}})
+	if resp.StatusCode != http.StatusSeeOther {
+		c.t.Fatalf("space creation failed with status %d", resp.StatusCode)
+	}
+	return resp.Header.Get("Location")
+}
+
+func TestNoteLifecycle(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	spacePath := c.createSpace("Devoirs")
+
+	resp, body := c.get(spacePath)
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "ne contient pas encore de note", `href="`+spacePath+`/notes/new"`)
+
+	// Creation from the space, "todo" checked by default
+	_, body = c.get(spacePath + "/notes/new")
+	expectContains(t, body, `value="todo" id="field-status" checked`, "Devoirs&nbsp;»")
+	token := c.csrfToken(spacePath + "/notes/new")
+	resp, _ = c.post(spacePath+"/notes", url.Values{
+		"csrf_token": {token}, "title": {"Exercices p.52"},
+		"content": {"Ligne 1\nLigne 2 <b>pas du HTML</b>"}, "status": {"in_progress"},
+	})
+	expectStatus(t, resp, http.StatusSeeOther)
+	notePath := resp.Header.Get("Location")
+	if !strings.HasPrefix(notePath, "/notes/") {
+		t.Fatalf("Location = %q, want /notes/{id}", notePath)
+	}
+
+	// Reading mode: content escaped, status as text, breadcrumb up to the space
+	resp, body = c.get(notePath)
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "Exercices p.52", "En cours", "&lt;b&gt;pas du HTML&lt;/b&gt;", `href="`+spacePath+`"`)
+
+	// Listed in its space with the count by status
+	_, body = c.get(spacePath)
+	expectContains(t, body, `href="`+notePath+`"`, "En cours&nbsp;: 1")
+
+	// Editing mode: pre-filled, then saved
+	_, body = c.get(notePath + "/edit")
+	expectContains(t, body, `value="Exercices p.52"`, `value="in_progress" id="field-status-in_progress" checked`)
+	resp, _ = c.post(notePath, url.Values{"csrf_token": {token}, "title": {"Exercices p.53"}, "content": {""}, "status": {"done"}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	_, body = c.get(notePath)
+	expectContains(t, body, "Exercices p.53", "Terminé", "pas encore de contenu")
+
+	// Deletion, then back to the space
+	resp, body = c.get(notePath + "/delete")
+	expectStatus(t, resp, http.StatusOK)
+	expectContains(t, body, "irréversible")
+	resp, _ = c.post(notePath+"/delete", url.Values{"csrf_token": {token}})
+	expectStatus(t, resp, http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != spacePath {
+		t.Errorf("Location = %q, want %q", got, spacePath)
+	}
+	resp, _ = c.get(notePath)
+	expectStatus(t, resp, http.StatusNotFound)
+}
+
+func TestNoteFormErrors(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	spacePath := c.createSpace("Jobs")
+	token := c.csrfToken(spacePath + "/notes/new")
+
+	resp, body := c.post(spacePath+"/notes", url.Values{
+		"csrf_token": {token}, "title": {""}, "content": {"Gardé"}, "status": {"urgent"},
+	})
+	expectStatus(t, resp, http.StatusUnprocessableEntity)
+	expectContains(t, body,
+		"Le formulaire contient 2 erreurs",
+		`href="#field-title"`, `href="#field-status"`,
+		`aria-describedby="field-status-error"`,
+		"Gardé</textarea>",
+	)
+}
+
+func TestNoteOfUnknownSpace(t *testing.T) {
+	c := newTestClient(t)
+	c.login()
+	for _, path := range []string{"/spaces/42/notes/new", "/notes/42", "/notes/42/edit", "/notes/x/delete"} {
+		resp, _ := c.get(path)
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("GET %s: status = %d, want 404", path, resp.StatusCode)
 		}
 	}
 }

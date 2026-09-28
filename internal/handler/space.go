@@ -53,9 +53,17 @@ func (h *SpaceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 type spacePage struct {
 	Space *apiclient.Space
+	Notes []apiclient.Note
+	// Counts gives the number of notes of each status, in display order
+	Counts []statusCount
 }
 
-// Show displays a space.
+type statusCount struct {
+	Status apiclient.NoteStatus
+	Count  int
+}
+
+// Show displays a space and all its notes (FT3).
 func (h *SpaceHandler) Show(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(w, r, h.renderer, "spaceId")
 	if !ok {
@@ -67,10 +75,15 @@ func (h *SpaceHandler) Show(w http.ResponseWriter, r *http.Request) {
 		apiPageError(w, r, h.renderer, h.sessions, err)
 		return
 	}
+	notes, err := h.api.ListNotes(r.Context(), token(r), id)
+	if err != nil {
+		apiPageError(w, r, h.renderer, h.sessions, err)
+		return
+	}
 
 	h.renderer.Render(w, r, http.StatusOK, "space", view.Page{
 		Title:      space.Name,
-		Data:       spacePage{Space: space},
+		Data:       spacePage{Space: space, Notes: notes, Counts: countByStatus(notes)},
 		Breadcrumb: spaceCrumbs(space, ""),
 	})
 }
@@ -247,4 +260,18 @@ func spaceCrumbs(space *apiclient.Space, current string) []view.Crumb {
 		return append(crumbs, view.Crumb{Label: space.Name})
 	}
 	return append(crumbs, view.Crumb{Label: space.Name, URL: spaceURL(space.ID)}, view.Crumb{Label: current})
+}
+
+// countByStatus counts the notes of each status.
+func countByStatus(notes []apiclient.Note) []statusCount {
+	counts := make([]statusCount, len(apiclient.NoteStatuses))
+	for i, status := range apiclient.NoteStatuses {
+		counts[i].Status = status
+		for _, n := range notes {
+			if n.Status == status {
+				counts[i].Count++
+			}
+		}
+	}
+	return counts
 }

@@ -19,6 +19,7 @@ type Handlers struct {
 	Page  *handler.PageHandler
 	Auth  *handler.AuthHandler
 	Space *handler.SpaceHandler
+	Note  *handler.NoteHandler
 }
 
 // Sessions gives the middlewares what they need to read the session.
@@ -66,6 +67,16 @@ func New(addr string, h Handlers, s Sessions, staticFS fs.FS, opts Options) *htt
 	protected("POST /spaces/{spaceId}", h.Space.Update)
 	protected("GET /spaces/{spaceId}/delete", h.Space.ConfirmDelete)
 	protected("POST /spaces/{spaceId}/delete", h.Space.Delete)
+
+	// Notes (FT3 to FT6): created from a space, then reached by their own ID.
+	// /notes/{id} is the reading mode, /notes/{id}/edit the editing mode.
+	protected("GET /spaces/{spaceId}/notes/new", h.Note.NewForm)
+	protected("POST /spaces/{spaceId}/notes", h.Note.Create)
+	protected("GET /notes/{noteId}", h.Note.Show)
+	protected("GET /notes/{noteId}/edit", h.Note.EditForm)
+	protected("POST /notes/{noteId}", h.Note.Update)
+	protected("GET /notes/{noteId}/delete", h.Note.ConfirmDelete)
+	protected("POST /notes/{noteId}/delete", h.Note.Delete)
 
 	// Any other URL gets the HTML 404 page
 	pages.HandleFunc("/", h.Page.NotFound)

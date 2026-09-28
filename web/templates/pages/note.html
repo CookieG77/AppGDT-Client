@@ -1,0 +1,29 @@
+{{define "content"}}
+{{$note := .Data.Note}}
+<article class="note" aria-labelledby="note-title">
+    <div class="page-header">
+        <div>
+            <h1 id="note-title">{{$note.Title}}</h1>
+            <p class="note__meta">
+                <span class="badge badge--{{$note.Status}}"><span class="visually-hidden">État&nbsp;: </span>{{$note.Status.Label}}</span>
+                <span>Créée le <time datetime="{{isodate $note.CreatedAt}}">{{date $note.CreatedAt}}</time></span>
+                {{if not ($note.UpdatedAt.Equal $note.CreatedAt)}}<span>Modifiée le <time datetime="{{isodate $note.UpdatedAt}}">{{date $note.UpdatedAt}}</time></span>{{end}}
+            </p>
+        </div>
+        <ul class="actions" aria-label="Actions sur la note">
+            <li><a class="button button--secondary button--small" href="/notes/{{$note.ID}}/edit">Modifier<span class="visually-hidden"> la note</span></a></li>
+            <li><a class="button button--danger-outline button--small" href="/notes/{{$note.ID}}/delete">Supprimer<span class="visually-hidden"> la note</span></a></li>
+        </ul>
+    </div>
+
+    <div class="sheet sheet--ruled note__sheet">
+        {{with $note.Content}}
+        <div class="note__content" id="note-content">{{.}}</div>
+        {{else}}
+        <p class="note__empty">Cette note n'a pas encore de contenu. <a href="/notes/{{$note.ID}}/edit">Ajouter du contenu</a></p>
+        {{end}}
+    </div>
+
+    <p class="note__back"><a href="/spaces/{{.Data.Space.ID}}">← Retour à l'espace {{.Data.Space.Name}}</a></p>
+</article>
+{{end}}
