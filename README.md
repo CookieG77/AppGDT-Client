@@ -113,6 +113,16 @@ Le dossier `certs/` et les fichiers `*.pem` / `*.key` sont ignorés par Git : **
 
 Les formulaires HTML ne connaissant que `GET` et `POST`, les modifications sont envoyées en `POST` au client, qui appelle l'API en `PUT` ou `DELETE`. Toutes les pages fonctionnent sans JavaScript.
 
+## Markdown dans les notes
+
+Le contenu des notes peut être mis en forme en Markdown. **L'API n'est pas concernée** : le texte est enregistré tel quel, et c'est le navigateur qui l'interprète à l'affichage (`web/static/js/markdown.js`).
+
+- **Consultation** : le texte brut est remplacé par son rendu HTML. Les titres sont décalés pour commencer au niveau `<h2>` (le titre de la note est le `<h1>`), et les cases des listes de tâches reçoivent un nom accessible.
+- **Édition** : onglets « Écrire » / « Aperçu » (motif d'onglets ARIA, navigation aux flèches) et aide repliable listant la syntaxe.
+- **Listes** : les extraits de notes sont affichés sans la syntaxe (`**`, `##`…).
+- **Sécurité** : [marked](https://github.com/markedjs/marked) ne filtre pas le HTML, donc tout le rendu passe par [DOMPurify](https://github.com/cure53/DOMPurify) (suppression des `<script>`, attributs `on…`, liens `javascript:`…). Les images externes sont remplacées par un lien (elles seraient bloquées par la CSP et pourraient servir à suivre la lecture). Les deux bibliothèques sont servies par le client (`web/static/vendor/`, licences jointes) : aucune ressource externe n'est chargée.
+- **Sans JavaScript** : la note s'affiche en texte brut, avec ses retours à la ligne. Tout reste utilisable.
+
 ## Structure du projet
 
 ```
@@ -130,5 +140,5 @@ web/
     layouts/         Squelette HTML commun (base.html)
     partials/        Morceaux réutilisables (en-tête, champs de formulaire, messages…)
     pages/           Une page par fichier, qui définit le bloc "content"
-  static/            CSS, polices embarquées (licence OFL) et images
+  static/            CSS, JavaScript (rendu Markdown), bibliothèques (vendor/), polices et images
 ```
