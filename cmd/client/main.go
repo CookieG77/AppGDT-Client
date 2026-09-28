@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/CookieG77/AppGDT-Client/internal/apiclient"
 	"github.com/CookieG77/AppGDT-Client/internal/config"
 	"github.com/CookieG77/AppGDT-Client/internal/handler"
 	"github.com/CookieG77/AppGDT-Client/internal/server"
@@ -39,6 +40,11 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+
+	// Client used by every page to call the API. An unreachable API does not
+	// stop the startup: pages will show an error until it comes back.
+	api := apiclient.New(cfg.API.BaseURL, cfg.API.Timeout)
+	checkAPI(ctx, logger, api, cfg.API.BaseURL)
 
 	// Parsing every template once: an invalid template stops the startup
 	renderer, err := view.NewRenderer(web.FS)
@@ -86,4 +92,16 @@ func run(logger *slog.Logger) error {
 
 	logger.Info("client stopped")
 	return nil
+}
+
+// checkAPI logs whether the API answers at startup.
+func checkAPI(ctx context.Context, logger *slog.Logger, api *apiclient.Client, baseURL string) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	if err := api.Health(ctx); err != nil {
+		logger.Warn("api is not reachable yet", "api", baseURL, "error", err)
+		return
+	}
+	logger.Info("api is reachable", "api", baseURL)
 }
