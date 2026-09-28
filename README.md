@@ -46,6 +46,8 @@ go run ./cmd/client
 
 Le client est ensuite accessible sur <http://localhost:3000>.
 
+**Comptes de démonstration** : depuis le dépôt [AppGDT-Server](https://github.com/CookieG77/AppGDT-Server), `go run ./cmd/seed` crée `demo@example.com` et `camille@example.com` (mot de passe `Demo1234!`), avec des espaces et des notes d'exemple.
+
 Pour lancer les tests :
 
 ```bash
